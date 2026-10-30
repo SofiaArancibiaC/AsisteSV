@@ -6,22 +6,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
-import com.js.smartvolt.asiste.ui.screens.CalendarioScreen
+import com.js.smartvolt.asiste.ui.view.CalendarioScreen
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
+import com.js.smartvolt.asiste.ui.view.InicioView
 import com.js.smartvolt.asiste.ui.view.LoginView
+import com.js.smartvolt.asiste.ui.view.ValidacionPresencia
+import java.time.LocalDate
+import java.time.LocalTime
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -30,12 +27,23 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AsisteSVTheme {
-                    CalendarioScreen()
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    LoginView()
-                }
+                    InicioView(
+                        codigoOperario = "OP-014",
+                        nombreFaena = "Faena Ruta 5 Norte",
+                        fecha = LocalDate.now(),
+                        inicioTurno = LocalTime.of(8, 0),
+                        finTurno = LocalTime.of(18, 0),
+                        frente = "Frente 2",
+                        validacion = ValidacionPresencia(true, true, -62, false),
+                        sinConexion = false,
+                        onMarcarEntrada = { /* validar y guardar la marca */ }
+                    )
+                    //CalendarioScreen()
+                //Surface(modifier = Modifier.fillMaxSize()) {
+                    //LoginView()
+                //}
 
-            }
+                }
             }
         }
     }
