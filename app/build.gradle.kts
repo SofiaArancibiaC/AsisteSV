@@ -6,6 +6,10 @@ plugins {
     alias(libs.plugins.room) // aplicar aquí el alias del plugin
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 android {
     namespace = "com.js.smartvolt.asiste"
     compileSdk {
@@ -14,29 +18,13 @@ android {
 
     defaultConfig {
         applicationId = "com.js.smartvolt.asiste"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
-    // --- BLOQUE OBLIGATORIO PARA EL PLUGIN DE ROOM ---
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
-    defaultConfig {
-        applicationId = "com.example.myapplication"
-        minSdk = 24
-        targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-
 
     buildTypes {
         release {

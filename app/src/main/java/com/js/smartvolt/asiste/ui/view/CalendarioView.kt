@@ -1,4 +1,4 @@
-package com.js.smartvolt.asiste.ui.screens
+package com.js.smartvolt.asiste.ui.view
 
 import android.os.Build
 import androidx.annotation.RequiresApi
