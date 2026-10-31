@@ -6,14 +6,19 @@ import androidx.room.Room
 object DatabaseProvider {
     private var db: AppDatabase? = null
 
-    fun getDao(context: Context): AsistenciaDAO {
+    private fun getDb(context: Context): AppDatabase {
         if (db == null) {
             db = Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "asistencia.db"
-            ).build()
+            )
+                .fallbackToDestructiveMigration(dropAllTables = true)
+                .build()
         }
-        return db!!.asistenciaDao()
+        return db!!
     }
+    fun getDao(context: Context): AsistenciaDAO= getDb(context).asistenciaDao()
+
+    fun getUsuarioDao(context: Context): UsuarioDAO= getDb(context).usuarioDao()
 }
