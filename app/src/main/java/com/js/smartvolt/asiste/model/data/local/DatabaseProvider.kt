@@ -12,7 +12,7 @@ object DatabaseProvider {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "asistencia.db"
-            ).build()
+            ).fallbackToDestructiveMigration().build()
         }
         return db!!.asistenciaDao()
     }

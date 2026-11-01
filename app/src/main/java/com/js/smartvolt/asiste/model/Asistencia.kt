@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 import java.time.LocalTime
-enum class EstadoAsistencia{ CUMPLIDA, ATRASADA, FALTA}
+enum class EstadoAsistencia{ CUMPLIDA, ATRASADA, FALTA, EN_REVISION, RECHAZADA}
 
 @Entity(tableName = "asistencia")
 data class Asistencia(
@@ -12,5 +12,5 @@ data class Asistencia(
     val fecha: LocalDate,
     val estado: EstadoAsistencia,
     val inicioTurno: LocalTime,
-    val registro: LocalTime? = null   // null si falta
+    val registro: LocalTime? = null
 )

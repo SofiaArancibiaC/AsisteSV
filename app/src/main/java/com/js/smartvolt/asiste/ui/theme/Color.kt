@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 val FondoArriba = Color(0xFF0A0F1C)
 val FondoAbajo = Color(0xFF16120F)
 val Amarillo = Color(0xFFE6FF0A)
+
+val AmarilloSuave = Color(0xFFFFE70A)
 val Naranja = Color(0xFFFF6A2B)
 val CampoFondo = Color(0xFF111A2E)
 val CampoBorde = Color(0xFF26324D)
@@ -21,6 +23,8 @@ val TextoClaro = Color(0xFFE5E7EB)
 val TextoGris = Color(0xFF8B94A7)
 val Verde = Color(0xFF2DD4A0)
 val Rojo = Color(0xFFFF4D5E)
+
+val Gris = Color(0xFFA8A8A8)
 
 // ---------------------------------------------------------------
 // Degradados
@@ -36,6 +40,8 @@ data class EstadoColors(
     val cumplida: Color,
     val atrasada: Color,
     val falta: Color,
+    val enRevision: Color,
+    val rechazada: Color,
     /** Color del texto/íconos que van encima de un relleno de estado. */
     val sobreEstado: Color
 ) {
@@ -45,8 +51,10 @@ data class EstadoColors(
 
 val EstadoColorsFaena = EstadoColors(
     cumplida = Verde,
-    atrasada = Naranja,
-    falta = Rojo,
+    atrasada = AmarilloSuave,
+    falta = Naranja,
+    enRevision = Gris,
+    rechazada = Rojo,
     sobreEstado = FondoArriba
 )
 

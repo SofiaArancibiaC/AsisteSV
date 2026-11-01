@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -93,6 +94,8 @@ private fun EstadoColors.de(estado: EstadoAsistencia): Color = when (estado) {
     EstadoAsistencia.CUMPLIDA -> cumplida
     EstadoAsistencia.ATRASADA -> atrasada
     EstadoAsistencia.FALTA -> falta
+    EstadoAsistencia.EN_REVISION -> enRevision
+    EstadoAsistencia.RECHAZADA -> rechazada
 }
 
 // ============================================================
@@ -167,9 +170,10 @@ fun CalendarioContenido(
     val nFaltas = delMes.count { it.estado == EstadoAsistencia.FALTA }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(DegradadoFondo)
+            .navigationBarsPadding()
     ) {
         // Encabezado (respeta la barra de estado)
         Column(
@@ -493,6 +497,8 @@ private fun DetalleDia(dia: DiaAsistenciaUi) {
         EstadoAsistencia.CUMPLIDA -> "CUMPLIDA"
         EstadoAsistencia.ATRASADA -> "ATRASADA"
         EstadoAsistencia.FALTA -> "FALTA"
+        EstadoAsistencia.EN_REVISION -> "EN REVISION"
+        EstadoAsistencia.RECHAZADA -> "RECHAZADA"
     }
 
     val forma = RoundedCornerShape(16.dp)
