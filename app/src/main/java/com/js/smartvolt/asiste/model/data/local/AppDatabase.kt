@@ -7,7 +7,7 @@ import com.js.smartvolt.asiste.model.Asistencia
 
 @Database(
     entities = [Asistencia::class],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
