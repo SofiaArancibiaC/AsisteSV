@@ -9,10 +9,10 @@ object DatabaseProvider {
     fun getDao(context: Context): AsistenciaDAO {
         if (db == null) {
             db = Room.databaseBuilder(
-                context.applicationContext,
-                AppDatabase::class.java,
-                "asistencia.db"
-            ).fallbackToDestructiveMigration().build()
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "asistencia.db"
+                    ).fallbackToDestructiveMigration(true).fallbackToDestructiveMigrationOnDowngrade(true).build()
         }
         return db!!.asistenciaDao()
     }
