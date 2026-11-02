@@ -1,22 +1,22 @@
 package com.js.smartvolt.asiste.ui.view
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -27,15 +27,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.js.smartvolt.asiste.ui.theme.AmarilloFaena
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
-import com.js.smartvolt.asiste.ui.theme.NegroFaena
-import com.js.smartvolt.asiste.ui.theme.estados
+import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
+import com.js.smartvolt.asiste.ui.theme.DegradadoMarca
+import com.js.smartvolt.asiste.ui.theme.LocalEstadoColors
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -65,31 +64,42 @@ fun InicioView(
     onVerCalendario: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val cs = MaterialTheme.colorScheme
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(DegradadoFondo)
+            .navigationBarsPadding()
     ) {
-        // ---------- Cabecera negra ----------
+        // ---------- Cabecera ----------
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(NegroFaena)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Text(
                 text = "ASISTENCIA OBRA",
                 style = MaterialTheme.typography.titleLarge,
-                color = AmarilloFaena
+                color = cs.primary
             )
             Text(
                 text = "$codigoOperario · $nombreFaena",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.White
+                color = cs.onSurfaceVariant
             )
         }
-        FranjaPrecaucion()
+
+        // Línea de marca
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .height(3.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(DegradadoMarca)
+        )
 
         // ---------- Contenido ----------
         Column(
@@ -111,8 +121,8 @@ fun InicioView(
             if (sinConexion) {
                 Etiqueta(
                     texto = "Sin conexión · se guardará en el teléfono",
-                    fondo = MaterialTheme.colorScheme.surfaceVariant,
-                    contenido = MaterialTheme.colorScheme.onSurfaceVariant
+                    fondo = cs.outline,
+                    contenido = cs.onSurface
                 )
             }
 
@@ -125,17 +135,20 @@ fun InicioView(
 
             Spacer(Modifier.weight(1f))
 
-            Button(
-                onClick = onMarcarEntrada,
+            // Botón principal con el degradado de marca
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(72.dp),
-                shape = MaterialTheme.shapes.large,
-                border = BorderStroke(2.dp, NegroFaena)
+                    .height(72.dp)
+                    .clip(MaterialTheme.shapes.large)
+                    .background(DegradadoMarca)
+                    .clickable { onMarcarEntrada() },
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "MARCAR ENTRADA",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = cs.onPrimary
                 )
             }
         }
@@ -153,6 +166,7 @@ private fun TarjetaTurno(
     fin: LocalTime,
     frente: String
 ) {
+    val cs = MaterialTheme.colorScheme
     val hora = DateTimeFormatter.ofPattern("HH:mm")
     val prefijo = if (fecha == LocalDate.now()) "HOY · " else ""
     val fechaTexto = prefijo + fecha
@@ -167,16 +181,17 @@ private fun TarjetaTurno(
             Text(
                 text = fechaTexto,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = cs.onSurfaceVariant
             )
             Text(
                 text = "${inicio.format(hora)} – ${fin.format(hora)}",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                color = cs.onSurface
             )
             Etiqueta(
                 texto = "TURNO PROGRAMADO · $frente",
-                fondo = MaterialTheme.colorScheme.primary,
-                contenido = MaterialTheme.colorScheme.onPrimary
+                fondo = cs.primary,
+                contenido = cs.onPrimary
             )
         }
     }
@@ -184,6 +199,7 @@ private fun TarjetaTurno(
 
 @Composable
 private fun TarjetaValidacion(v: ValidacionPresencia) {
+    val cs = MaterialTheme.colorScheme
     val baliza = if (v.balizaDetectada) {
         "✓ ${v.rssiDbm ?: "--"} dBm" to true
     } else {
@@ -194,7 +210,8 @@ private fun TarjetaValidacion(v: ValidacionPresencia) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "VALIDACIÓN DE PRESENCIA",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = cs.onSurface
             )
 
             FilaValidacion(
@@ -202,13 +219,13 @@ private fun TarjetaValidacion(v: ValidacionPresencia) {
                 resultado = if (v.gpsDentroFaena) "✓ SÍ" else "✕ NO",
                 correcto = v.gpsDentroFaena
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = cs.outline)
             FilaValidacion(
                 etiqueta = "Baliza BLE de la faena",
                 resultado = baliza.first,
                 correcto = baliza.second
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = cs.outline)
             // Aquí lo correcto es que NO haya ubicación simulada
             FilaValidacion(
                 etiqueta = "Ubicación simulada",
@@ -221,6 +238,8 @@ private fun TarjetaValidacion(v: ValidacionPresencia) {
 
 @Composable
 private fun FilaValidacion(etiqueta: String, resultado: String, correcto: Boolean) {
+    val estados = LocalEstadoColors.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -228,24 +247,30 @@ private fun FilaValidacion(etiqueta: String, resultado: String, correcto: Boolea
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = etiqueta, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = etiqueta,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
         Etiqueta(
             texto = resultado,
-            fondo = if (correcto) MaterialTheme.estados.cumplida else MaterialTheme.estados.falta,
-            contenido = MaterialTheme.estados.onEstado
+            fondo = if (correcto) estados.cumplida else estados.falta,
+            contenido = estados.sobreEstado
         )
     }
 }
 
-/** Tarjeta blanca con borde grueso, como en el mockup. */
+/** Tarjeta oscura con borde, como los campos del diseño. */
 @Composable
 private fun TarjetaConBorde(contenido: @Composable () -> Unit) {
+    val cs = MaterialTheme.colorScheme
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline),
+        border = BorderStroke(1.5.dp, cs.outline),
         colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+            containerColor = cs.surface,
+            contentColor = cs.onSurface
         )
     ) {
         contenido()
@@ -268,32 +293,6 @@ private fun Etiqueta(texto: String, fondo: Color, contenido: Color) {
     }
 }
 
-/** Franja diagonal amarilla y negra bajo la cabecera. */
-@Composable
-private fun FranjaPrecaucion() {
-    Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(10.dp)
-            .clipToBounds()
-    ) {
-        drawRect(AmarilloFaena)
-        val paso = 14.dp.toPx()
-        var x = -size.height
-        while (x < size.width) {
-            val franja = Path().apply {
-                moveTo(x, size.height)
-                lineTo(x + paso / 2, size.height)
-                lineTo(x + paso / 2 + size.height, 0f)
-                lineTo(x + size.height, 0f)
-                close()
-            }
-            drawPath(franja, NegroFaena)
-            x += paso
-        }
-    }
-}
-
 // ============================================================
 // Preview con datos ficticios
 // ============================================================
@@ -301,7 +300,7 @@ private fun FranjaPrecaucion() {
 @Preview(showBackground = true, heightDp = 780)
 @Composable
 private fun InicioScreenPreview() {
-    AsisteSVTheme() {
+    AsisteSVTheme {
         InicioView(
             codigoOperario = "OP-014",
             nombreFaena = "Faena Ruta 5 Norte",

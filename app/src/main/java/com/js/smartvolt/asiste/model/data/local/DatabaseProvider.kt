@@ -15,6 +15,10 @@ object DatabaseProvider {
             )
                 .fallbackToDestructiveMigration(dropAllTables = true)
                 .build()
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "asistencia.db"
+                    ).fallbackToDestructiveMigration(true).fallbackToDestructiveMigrationOnDowngrade(true).build()
         }
         return db!!
     }

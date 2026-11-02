@@ -18,4 +18,8 @@ interface AsistenciaDAO {
 
     @Query("DELETE FROM asistencia WHERE id = :id")
     suspend fun delete(id: Long)
+
+    @Query("SELECT * FROM asistencia ORDER BY fecha DESC")
+    fun getAll(): Flow<List<Asistencia>>
+
 }

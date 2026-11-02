@@ -1,6 +1,5 @@
 package com.js.smartvolt.asiste.ui.view
 
-import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,9 +53,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 
 //Paleta de diseño
 private val FondoArriba = Color(0xFF0A0F1C)
@@ -274,6 +278,37 @@ fun LoginView(
                 modifier = Modifier.size(20.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        val context = LocalContext.current
+        Button(
+            onClick = {
+                val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
+                val biometricManager = androidx.biometric.BiometricManager.from(context)
+                if (biometricManager.canAuthenticate(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS) {
+                    val executor = androidx.core.content.ContextCompat.getMainExecutor(context)
+                    val prompt = androidx.biometric.BiometricPrompt(activity, executor, object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) {
+                            onLogin()
+                        }
+                    })
+                    val info = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticación biométrica")
+                        .setSubtitle("Usa tu huella o rostro")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
+                    prompt.authenticate(info)
+                } else {
+                    onLogin()
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth().height(54.dp)
+        ) {
+            Text("INICIAR CON HUELLA")
+        }
+
     }
 }
 
