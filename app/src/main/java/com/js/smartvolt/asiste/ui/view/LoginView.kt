@@ -79,6 +79,7 @@ private val DegradadoMarca = Brush.horizontalGradient(listOf(Amarillo, Amarillo)
 @Composable
 fun LoginView(
     onLogin: (correo: String, pass: String) -> Unit = { _, _ -> },
+    onOlvideClave: () -> Unit={},
     error: String? = null,
     cargando: Boolean = false
 ) {
@@ -169,7 +170,7 @@ fun LoginView(
                 text = "¿Olvidaste tu clave?",
                 color = Naranja,
                 fontSize = 12.sp,
-                modifier = Modifier.clickable { /* TODO: recuperar clave */ }
+                modifier = Modifier.clickable { onOlvideClave()}
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -290,7 +291,7 @@ fun LoginView(
                     val executor = androidx.core.content.ContextCompat.getMainExecutor(context)
                     val prompt = androidx.biometric.BiometricPrompt(activity, executor, object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                         override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) {
-                            onLogin()
+                            onLogin(correo, pass)
                         }
                     })
                     val info = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
@@ -300,7 +301,7 @@ fun LoginView(
                         .build()
                     prompt.authenticate(info)
                 } else {
-                    onLogin()
+                    onLogin(correo, pass)
                 }
             },
             shape = RoundedCornerShape(16.dp),
