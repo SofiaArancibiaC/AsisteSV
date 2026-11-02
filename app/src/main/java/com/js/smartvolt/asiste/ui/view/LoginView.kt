@@ -77,7 +77,11 @@ private val DegradadoMarca = Brush.horizontalGradient(listOf(Amarillo, Amarillo)
 
 
 @Composable
-fun LoginView(onLogin: () -> Unit = {}) {
+fun LoginView(
+    onLogin: (correo: String, pass: String) -> Unit = { _, _ -> },
+    error: String? = null,
+    cargando: Boolean = false
+) {
     //Estados
     var correo by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
@@ -237,9 +241,20 @@ fun LoginView(onLogin: () -> Unit = {}) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        error?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                color = Naranja,
+                fontSize = 12.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         // Botón con degradado
         Button(
-            onClick = { onLogin() },
+            onClick = { onLogin(correo, pass) },
+            enabled = !cargando,
             shape = RoundedCornerShape(16.dp),
             contentPadding = PaddingValues(0.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
