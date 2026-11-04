@@ -2,7 +2,7 @@ package com.js.smartvolt.asiste
 
 import android.os.Bundle
 import android.util.Log
-import android.view.Surface
+import androidx.compose.material3.Surface
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,18 +17,22 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.js.smartvolt.asiste.model.Asistencia
-import com.js.smartvolt.asiste.model.Usuario
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
 import com.js.smartvolt.asiste.model.data.local.sha256
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
-import com.js.smartvolt.asiste.ui.view.LoginEstado
 import com.js.smartvolt.asiste.ui.view.LoginView
-import com.js.smartvolt.asiste.ui.view.LoginViewModel
-import com.js.smartvolt.asiste.ui.view.LoginViewModelFactory
 import com.js.smartvolt.asiste.ui.view.MainView
 import com.js.smartvolt.asiste.ui.view.OlvideClaveViewModel
 import com.js.smartvolt.asiste.ui.view.OlvideClaveViewModelFactory
 import com.js.smartvolt.asiste.ui.view.OlvideContrasenaView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import java.time.LocalTime
+import com.js.smartvolt.asiste.model.EstadoAsistencia
+import com.js.smartvolt.asiste.model.Usuario
+import com.js.smartvolt.asiste.ui.view.LoginEstado
+import com.js.smartvolt.asiste.ui.view.LoginViewModel
+import com.js.smartvolt.asiste.ui.view.LoginViewModelFactory
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
