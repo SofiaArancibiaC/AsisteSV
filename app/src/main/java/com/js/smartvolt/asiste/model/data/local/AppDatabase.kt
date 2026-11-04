@@ -8,7 +8,7 @@ import com.js.smartvolt.asiste.model.Usuario
 
 @Database(
     entities = [Asistencia::class, Usuario::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
