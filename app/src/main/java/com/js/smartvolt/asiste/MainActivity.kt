@@ -44,31 +44,6 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Datos de prueba: siembra asistencias de ejemplo una sola vez
-        val dao = DatabaseProvider.getAsistenciaDao(this)
-        lifecycleScope.launch {
-            try {
-                val list = dao.getByRange(
-                    LocalDate.now().minusMonths(2),
-                    LocalDate.now().plusMonths(2)
-                ).first()
-                if (list.isEmpty()) {
-                    val hoy = LocalDate.now()
-                    val samples = listOf(
-                        Asistencia(fecha = hoy.minusDays(1), estado = EstadoAsistencia.CUMPLIDA, inicioTurno = LocalTime.of(8, 0), registro = LocalTime.of(7, 55)),
-                        Asistencia(fecha = hoy.minusDays(2), estado = EstadoAsistencia.ATRASADA, inicioTurno = LocalTime.of(8, 0), registro = LocalTime.of(8, 20)),
-                        Asistencia(fecha = hoy.minusDays(3), estado = EstadoAsistencia.FALTA, inicioTurno = LocalTime.of(8, 0), registro = null),
-                        Asistencia(fecha = hoy.plusDays(1), estado = EstadoAsistencia.CUMPLIDA, inicioTurno = LocalTime.of(8, 0), registro = LocalTime.of(7, 58)),
-                        Asistencia(fecha = hoy.plusDays(2), estado = EstadoAsistencia.EN_REVISION, inicioTurno = LocalTime.of(8, 0), registro = LocalTime.of(8, 5)),
-                        Asistencia(fecha = hoy.plusDays(3), estado = EstadoAsistencia.RECHAZADA, inicioTurno = LocalTime.of(8, 0), registro = null)
-                    )
-                    samples.forEach { dao.upsert(it) }
-                }
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Error sembrando asistencias", e)
-            }
-        }
-
         setContent {
             AsisteSVTheme() {
                 // ---- Navegación: "login" | "olvide" | "inicio" ----
@@ -80,27 +55,6 @@ class MainActivity : FragmentActivity() {
                 val vm: LoginViewModel = viewModel(factory = LoginViewModelFactory(usuarioDao))
                 val estado by vm.estado.collectAsState()
 
-                // Usuario de prueba (solo desarrollo)
-                LaunchedEffect(Unit) {
-                    try {
-                        usuarioDao.insertar(
-                            RecuperarUsuario(
-                                correo = "tecnico@serviciosvolt.cl",
-                                nombre = "Técnico Demo",
-                                passwordHash = sha256("123456")
-                            )
-                        )
-                        usuarioDao.insertar(
-                            RecuperarUsuario(
-                                correo = "admin@serviciosvolt.cl",
-                                nombre = "Admin Demo",
-                                passwordHash = sha256("admin123")
-                            )
-                        )
-                    } catch (e: Exception) {
-                        Log.e("MainActivity", "Error creando usuario de prueba", e)
-                    }
-                }
 
                 // Si el login fue exitoso -> pantalla de inicio
                 LaunchedEffect(estado) {
