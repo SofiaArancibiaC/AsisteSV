@@ -14,15 +14,13 @@ object DatabaseProvider {
                 "asistencia.db"
             )
                 .fallbackToDestructiveMigration(dropAllTables = true)
+                .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                 .build()
-                        context.applicationContext,
-                        AppDatabase::class.java,
-                        "asistencia.db"
-                    ).fallbackToDestructiveMigration(true).fallbackToDestructiveMigrationOnDowngrade(true).build()
         }
         return db!!
     }
-    fun getDao(context: Context): AsistenciaDAO= getDb(context).asistenciaDao()
 
-    fun getUsuarioDao(context: Context): UsuarioDAO= getDb(context).usuarioDao()
+    fun getDao(context: Context): AsistenciaDAO = getDb(context).asistenciaDao()
+
+    fun getUsuarioDao(context: Context): UsuarioDAO = getDb(context).usuarioDao()
 }

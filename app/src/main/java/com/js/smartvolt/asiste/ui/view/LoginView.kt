@@ -223,20 +223,6 @@ fun LoginView(
                     fontSize = 13.sp
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .clip(CircleShape)
-                        .background(Verde)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Servidor Seguro",
-                    color = Verde,
-                    fontSize = 11.sp
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -290,7 +276,7 @@ fun LoginView(
                     val executor = androidx.core.content.ContextCompat.getMainExecutor(context)
                     val prompt = androidx.biometric.BiometricPrompt(activity, executor, object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                         override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) {
-                            onLogin()
+                            onLogin(correo, pass)
                         }
                     })
                     val info = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
@@ -300,7 +286,7 @@ fun LoginView(
                         .build()
                     prompt.authenticate(info)
                 } else {
-                    onLogin()
+                    onLogin(correo,pass)
                 }
             },
             shape = RoundedCornerShape(16.dp),
