@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +61,7 @@ fun InicioView(
     validacion: ValidacionPresencia,
     sinConexion: Boolean,
     onMarcarEntrada: () -> Unit,
+    onVerCalendario: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val cs = MaterialTheme.colorScheme
@@ -122,6 +124,13 @@ fun InicioView(
                     fondo = cs.outline,
                     contenido = cs.onSurface
                 )
+            }
+
+            TextButton(
+                onClick = onVerCalendario,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("VER CALENDARIO")
             }
 
             Spacer(Modifier.weight(1f))

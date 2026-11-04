@@ -77,7 +77,12 @@ private val DegradadoMarca = Brush.horizontalGradient(listOf(Amarillo, Amarillo)
 
 
 @Composable
-fun LoginView(onLogin: () -> Unit = {}) {
+fun LoginView(
+    onLogin: (correo: String, pass: String) -> Unit = { _, _ -> },
+    onOlvideClave: () -> Unit={},
+    error: String? = null,
+    cargando: Boolean = false
+) {
     //Estados
     var correo by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
@@ -165,7 +170,7 @@ fun LoginView(onLogin: () -> Unit = {}) {
                 text = "¿Olvidaste tu clave?",
                 color = Naranja,
                 fontSize = 12.sp,
-                modifier = Modifier.clickable { /* TODO: recuperar clave */ }
+                modifier = Modifier.clickable { onOlvideClave()}
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -219,27 +224,24 @@ fun LoginView(onLogin: () -> Unit = {}) {
                     fontSize = 13.sp
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .clip(CircleShape)
-                        .background(Verde)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Servidor Seguro",
-                    color = Verde,
-                    fontSize = 11.sp
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        error?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                color = Naranja,
+                fontSize = 12.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         // Botón con degradado
         Button(
-            onClick = { onLogin() },
+            onClick = { onLogin(correo, pass) },
+            enabled = !cargando,
             shape = RoundedCornerShape(16.dp),
             contentPadding = PaddingValues(0.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -275,7 +277,7 @@ fun LoginView(onLogin: () -> Unit = {}) {
                     val executor = androidx.core.content.ContextCompat.getMainExecutor(context)
                     val prompt = androidx.biometric.BiometricPrompt(activity, executor, object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                         override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) {
-                            onLogin()
+                            onLogin(correo, pass)
                         }
                     })
                     val info = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
@@ -285,7 +287,7 @@ fun LoginView(onLogin: () -> Unit = {}) {
                         .build()
                     prompt.authenticate(info)
                 } else {
-                    onLogin()
+                    onLogin(correo, pass)
                 }
             },
             shape = RoundedCornerShape(16.dp),
