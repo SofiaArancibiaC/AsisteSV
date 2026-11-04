@@ -41,3 +41,9 @@ App Android (Kotlin + Jetpack Compose) de asistencia/turnos. Package `com.js.sma
 ## Admin UI (mockup)
 - `AdminMainView.kt` ahora contiene navegación entre 9 pantallas admin (Panel, Reportes, Alertas, Usuarios, Detalle alerta, Perfil usuario, Nuevo usuario, Turnos, Horas extra, Detalle operario) con barra inferior de 4 pestañas y estado activo.
 - Panel implementado con selector de día, faena, KPIs tocables, "Requiere atención" y asistencia por faena.
+- Reportes implementado con filtros, tabla de operarios, totales y botón exportar.
+- Componentes reutilizables movidos a `ui/components/AdminComponents.kt` (AdminHeader, KpiCard, FaenaRow, AdminPrimaryButton).
+- UsuarioViewModel creado para sincronizar lista de usuarios desde Room; AdminUsuariosView ahora muestra usuarios reales.
+- AdminNuevoUsuarioView ahora inserta usuarios en Room (correo, nombre, contraseña).
+- Datos de prueba movidos de MainActivity a AsisteApp (Application), que siembra usuarios por defecto en Room. MainActivity ya no inyecta datos a mano.
+- Componente de botón con degradado creado en `ui/components/Buttons.kt` (GradientButton) listo para usar en vistas de usuario.
