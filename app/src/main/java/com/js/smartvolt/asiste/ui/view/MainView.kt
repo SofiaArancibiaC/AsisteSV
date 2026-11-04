@@ -54,7 +54,7 @@ fun MainView() {
                 inicioTurno = LocalTime.of(8, 0),
                 finTurno = LocalTime.of(18, 0),
                 frente = "Frente 2",
-                validacion = ValidacionPresencia(true, true, -62, false),
+                validacion = ValidacionPresencia(true, true, -62),
                 sinConexion = false,
                 onMarcarEntrada = { resultadoMarca = ResultadoMarca.aprobada("07:56", -62) },
                 modifier = Modifier.padding(padding)

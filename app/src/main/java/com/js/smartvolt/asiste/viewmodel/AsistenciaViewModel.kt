@@ -14,7 +14,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@RequiresApi(Build.VERSION_CODES.O)
 class AsistenciaViewModel(private val dao: AsistenciaDAO) : ViewModel() {
 
     // Mes que se está mostrando
@@ -58,7 +57,6 @@ class AsistenciaViewModel(private val dao: AsistenciaDAO) : ViewModel() {
 }
 
 class AsistenciaViewModelFactory(private val dao: AsistenciaDAO) : ViewModelProvider.Factory {
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return AsistenciaViewModel(dao) as T
     }
