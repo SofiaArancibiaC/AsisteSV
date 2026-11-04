@@ -79,6 +79,7 @@ private val DegradadoMarca = Brush.horizontalGradient(listOf(Amarillo, Amarillo)
 @Composable
 fun LoginView(
     onLogin: (correo: String, pass: String) -> Unit = { _, _ -> },
+    onOlvideClave: () -> Unit={},
     error: String? = null,
     cargando: Boolean = false
 ) {
@@ -169,7 +170,7 @@ fun LoginView(
                 text = "¿Olvidaste tu clave?",
                 color = Naranja,
                 fontSize = 12.sp,
-                modifier = Modifier.clickable { /* TODO: recuperar clave */ }
+                modifier = Modifier.clickable { onOlvideClave()}
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -286,7 +287,7 @@ fun LoginView(
                         .build()
                     prompt.authenticate(info)
                 } else {
-                    onLogin(correo,pass)
+                    onLogin(correo, pass)
                 }
             },
             shape = RoundedCornerShape(16.dp),

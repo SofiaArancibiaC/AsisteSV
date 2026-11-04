@@ -11,6 +11,9 @@ interface UsuarioDAO{
     @Query("SELECT * FROM usuarios WHERE correo = :correo AND passwordHash = :hash LIMIT 1")
     suspend fun login(correo: String, hash: String) : Usuario?
 
+    @Query("SELECT COUNT(*) FROM usuarios WHERE correo = :correo")
+    suspend fun existeCorreo(correo: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(usuario: Usuario)
 }
