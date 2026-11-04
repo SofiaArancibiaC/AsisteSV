@@ -1,5 +1,6 @@
-package com.js.smartvolt.asiste.viewmodel
+package com.js.smartvolt.asiste.ui.view
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,35 +11,43 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed interface LoginEstado{
+sealed interface LoginEstado {
     data object Idle : LoginEstado
     data object Cargando : LoginEstado
     data object Exito : LoginEstado
     data class Error(val mensaje: String) : LoginEstado
 }
 
-class LoginViewModel(private val dao: UsuarioDAO): ViewModel(){
-    private val _estado= MutableStateFlow<LoginEstado>(LoginEstado.Idle)
+class LoginViewModel(private val dao: UsuarioDAO) : ViewModel() {
 
+    private val _estado = MutableStateFlow<LoginEstado>(LoginEstado.Idle)
     val estado: StateFlow<LoginEstado> = _estado.asStateFlow()
 
-    fun login(correo: String, pass: String){
-        if (correo.isBlank() || pass.isBlank()){
-            _estado.value= LoginEstado.Error("Completa correo y contraseña")
+    fun login(correo: String, pass: String) {
+        if (correo.isBlank() || pass.isBlank()) {
+            _estado.value = LoginEstado.Error("Completa correo y contraseña")
             return
         }
         viewModelScope.launch {
             _estado.value = LoginEstado.Cargando
-            val usuario = dao.login(correo.trim().lowercase(), sha256(pass))
-            _estado.value = if (usuario != null) {
-                LoginEstado.Exito
-            } else {
-                LoginEstado.Error("Correo o contraseña incorrectos")
+            try {
+                val usuario = dao.login(correo.trim().lowercase(), sha256(pass))
+                _estado.value = if (usuario != null) {
+                    LoginEstado.Exito
+                } else {
+                    LoginEstado.Error("Correo o contraseña incorrectos")
+                }
+            } catch (e: Exception) {
+                Log.e("LoginVM", "Error en login", e)
+                _estado.value = LoginEstado.Error("Error interno: ${e.message}")
             }
         }
-
-        }
     }
+
+    fun limpiarEstado() {
+        _estado.value = LoginEstado.Idle
+    }
+}
 
 class LoginViewModelFactory(private val dao: UsuarioDAO) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
