@@ -1,4 +1,4 @@
-package com.js.smartvolt.asiste.ui.view
+package com.js.smartvolt.asiste.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

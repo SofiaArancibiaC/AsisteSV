@@ -224,20 +224,6 @@ fun LoginView(
                     fontSize = 13.sp
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .clip(CircleShape)
-                        .background(Verde)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Servidor Seguro",
-                    color = Verde,
-                    fontSize = 11.sp
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))

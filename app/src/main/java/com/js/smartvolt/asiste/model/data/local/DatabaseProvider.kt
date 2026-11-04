@@ -14,6 +14,7 @@ object DatabaseProvider {
                 "asistencia.db"
             )
                 .fallbackToDestructiveMigration(dropAllTables = true)
+                .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                 .build()
         }
         return db!!

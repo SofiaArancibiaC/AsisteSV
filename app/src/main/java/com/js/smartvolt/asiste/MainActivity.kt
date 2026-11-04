@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -123,6 +124,12 @@ class MainActivity : FragmentActivity() {
                     }
 
                     "inicio" -> MainView()
+                }
+                var loggedIn by remember { mutableStateOf(false) }
+                if (loggedIn) {
+                    MainView()
+                } else {
+                    LoginView(onLogin = { loggedIn = true }) //TODO: ARREGLAR LOGIN!! DA ERROR POR ALGUNA RAZÓN
                 }
             }
         }
