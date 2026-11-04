@@ -1,21 +1,10 @@
 package com.js.smartvolt.asiste.ui.view
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import java.time.LocalDate
 import java.time.LocalTime
@@ -65,7 +54,7 @@ fun MainView() {
                 inicioTurno = LocalTime.of(8, 0),
                 finTurno = LocalTime.of(18, 0),
                 frente = "Frente 2",
-                validacion = ValidacionPresencia(true, true, -62, false),
+                validacion = ValidacionPresencia(true, true, -62),
                 sinConexion = false,
                 onMarcarEntrada = { resultadoMarca = ResultadoMarca.aprobada("07:56", -62) },
                 modifier = Modifier.padding(padding)

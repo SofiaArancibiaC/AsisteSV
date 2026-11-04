@@ -47,7 +47,6 @@ data class ValidacionPresencia(
     val gpsDentroFaena: Boolean,
     val balizaDetectada: Boolean,
     val rssiDbm: Int? = null,
-    val ubicacionSimulada: Boolean
 )
 
 @Composable
@@ -226,12 +225,6 @@ private fun TarjetaValidacion(v: ValidacionPresencia) {
                 correcto = baliza.second
             )
             HorizontalDivider(color = cs.outline)
-            // Aquí lo correcto es que NO haya ubicación simulada
-            FilaValidacion(
-                etiqueta = "Ubicación simulada",
-                resultado = if (v.ubicacionSimulada) "✕ SÍ" else "✓ NO",
-                correcto = !v.ubicacionSimulada
-            )
         }
     }
 }
@@ -312,7 +305,6 @@ private fun InicioScreenPreview() {
                 gpsDentroFaena = true,
                 balizaDetectada = true,
                 rssiDbm = -62,
-                ubicacionSimulada = false
             ),
             sinConexion = true,
             onMarcarEntrada = {}

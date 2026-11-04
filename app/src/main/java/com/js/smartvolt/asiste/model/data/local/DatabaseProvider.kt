@@ -6,21 +6,26 @@ import androidx.room.Room
 object DatabaseProvider {
     private var db: AppDatabase? = null
 
-    private fun getDb(context: Context): AppDatabase {
+    private fun database(context: Context): AppDatabase {
         if (db == null) {
             db = Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
-                "asistencia.db"
+                "asiste.db"
             )
-                .fallbackToDestructiveMigration(dropAllTables = true)
-                .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
+                .fallbackToDestructiveMigration(true)
+                .fallbackToDestructiveMigrationOnDowngrade(true)
                 .build()
         }
         return db!!
     }
 
-    fun getDao(context: Context): AsistenciaDAO = getDb(context).asistenciaDao()
+    fun getAsistenciaDao(context: Context): AsistenciaDAO =
+        database(context).asistenciaDao()
 
-    fun getUsuarioDao(context: Context): UsuarioDAO = getDb(context).usuarioDao()
+    fun getUsuarioDao(context: Context): UsuarioDAO =
+        database(context).usuarioDao()
+
+    // Compatibilidad: por defecto devuelve el DAO de asistencia
+    fun getDao(context: Context): AsistenciaDAO = getAsistenciaDao(context)
 }

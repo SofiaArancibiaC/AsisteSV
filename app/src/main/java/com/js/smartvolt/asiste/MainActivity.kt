@@ -22,6 +22,7 @@ import com.js.smartvolt.asiste.model.data.local.sha256
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
 import com.js.smartvolt.asiste.ui.view.LoginView
 import com.js.smartvolt.asiste.ui.view.MainView
+import com.js.smartvolt.asiste.ui.view.admin.AdminMainView
 import com.js.smartvolt.asiste.ui.view.OlvideClaveViewModel
 import com.js.smartvolt.asiste.ui.view.OlvideClaveViewModelFactory
 import com.js.smartvolt.asiste.ui.view.OlvideContrasenaView
@@ -29,7 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import java.time.LocalTime
 import com.js.smartvolt.asiste.model.EstadoAsistencia
-import com.js.smartvolt.asiste.model.Usuario
+import com.js.smartvolt.asiste.model.RecuperarUsuario
 import com.js.smartvolt.asiste.ui.view.LoginEstado
 import com.js.smartvolt.asiste.ui.view.LoginViewModel
 import com.js.smartvolt.asiste.ui.view.LoginViewModelFactory
@@ -44,7 +45,7 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
 
         // Datos de prueba: siembra asistencias de ejemplo una sola vez
-        val dao = DatabaseProvider.getDao(this)
+        val dao = DatabaseProvider.getAsistenciaDao(this)
         lifecycleScope.launch {
             try {
                 val list = dao.getByRange(
@@ -72,6 +73,7 @@ class MainActivity : FragmentActivity() {
             AsisteSVTheme() {
                 // ---- Navegación: "login" | "olvide" | "inicio" ----
                 var pantalla by remember { mutableStateOf("login") }
+                var esAdmin by remember { mutableStateOf(false) }
 
                 val context = LocalContext.current
                 val usuarioDao = remember { DatabaseProvider.getUsuarioDao(context) }
@@ -82,10 +84,17 @@ class MainActivity : FragmentActivity() {
                 LaunchedEffect(Unit) {
                     try {
                         usuarioDao.insertar(
-                            Usuario(
+                            RecuperarUsuario(
                                 correo = "tecnico@serviciosvolt.cl",
                                 nombre = "Técnico Demo",
                                 passwordHash = sha256("123456")
+                            )
+                        )
+                        usuarioDao.insertar(
+                            RecuperarUsuario(
+                                correo = "admin@serviciosvolt.cl",
+                                nombre = "Admin Demo",
+                                passwordHash = sha256("admin123")
                             )
                         )
                     } catch (e: Exception) {
@@ -95,7 +104,7 @@ class MainActivity : FragmentActivity() {
 
                 // Si el login fue exitoso -> pantalla de inicio
                 LaunchedEffect(estado) {
-                    if (estado is LoginEstado.Exito) pantalla = "inicio"
+                    if (estado is LoginEstado.Exito) pantalla = if (esAdmin) "admin" else "inicio"
                 }
 
                 // Botón atrás: desde cualquier pantalla vuelve al login
@@ -107,7 +116,7 @@ class MainActivity : FragmentActivity() {
                 when (pantalla) {
                     "login" -> Surface(modifier = Modifier.fillMaxSize()) {
                         LoginView(
-                            onLogin = { correo, pass -> vm.login(correo, pass) },
+                            onLogin = { correo, pass -> esAdmin = correo.trim().lowercase().contains("admin"); vm.login(correo, pass) },
                             onOlvideClave = { pantalla = "olvide" },
                             cargando = estado is LoginEstado.Cargando,
                             error = (estado as? LoginEstado.Error)?.mensaje
@@ -136,6 +145,7 @@ class MainActivity : FragmentActivity() {
                     }
 
                     "inicio" -> MainView()
+                    "admin" -> AdminMainView()
                 }
             }
         }

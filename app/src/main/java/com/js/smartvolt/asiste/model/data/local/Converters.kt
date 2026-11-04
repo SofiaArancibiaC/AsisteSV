@@ -10,14 +10,12 @@ class Converters {
     @TypeConverter
     fun fromLocalDate(value: LocalDate?): String? = value?.toString()
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun toLocalDate(value: String?): LocalDate? = value?.let { LocalDate.parse(it) }
 
     @TypeConverter
     fun fromLocalTime(value: LocalTime?): String? = value?.toString()
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun toLocalTime(value: String?): LocalTime? = value?.let { LocalTime.parse(it) }
 }
