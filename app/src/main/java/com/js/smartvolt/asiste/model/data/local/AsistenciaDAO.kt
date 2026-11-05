@@ -10,8 +10,11 @@ import java.time.LocalDate
 
 @Dao
 interface AsistenciaDAO {
-    @Query("SELECT * FROM asistencia WHERE fecha BETWEEN :start AND :end")
+    @Query("SELECT * FROM asistencia WHERE fecha BETWEEN :start AND :end ORDER BY fecha ASC, id ASC")
     fun getByRange(start: LocalDate, end: LocalDate): Flow<List<Asistencia>>
+
+    @Query("SELECT * FROM asistencia WHERE fecha = :fecha ORDER BY id ASC")
+    suspend fun getByFecha(fecha: LocalDate): List<Asistencia>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: Asistencia)

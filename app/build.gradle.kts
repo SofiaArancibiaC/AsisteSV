@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.compose.icons.extended)
 
     implementation(platform(libs.androidx.compose.bom))
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
@@ -63,6 +64,10 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.kizitonwose.calendar.compose)
+    // build.gradle.kts (Module :app)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

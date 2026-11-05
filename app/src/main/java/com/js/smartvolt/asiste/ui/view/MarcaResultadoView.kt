@@ -43,6 +43,7 @@ data class CheckPresencia(
     val ok: Boolean
 )
 
+
 /** Datos que necesita la pantalla para mostrar una marca aprobada o rechazada. */
 data class ResultadoMarca(
     val aprobada: Boolean,
@@ -54,20 +55,33 @@ data class ResultadoMarca(
     val textoBoton: String
 ) {
     companion object {
-        /** Marca válida. [hora] por ejemplo "07:56", [rssi] por ejemplo -62. */
-        fun aprobada(hora: String, rssi: Int, sinConexion: Boolean = false) = ResultadoMarca(
-            aprobada = true,
-            titulo = "MARCA REGISTRADA",
-            subtitulo = "Entrada registrada a las $hora",
-            checks = listOf(
-                CheckPresencia("GPS dentro de la faena", "SÍ", true),
-                CheckPresencia("Baliza BLE de la faena", "$rssi dBm", true),
-                CheckPresencia("Ubicación simulada", "NO", true)
-            ),
-            mensaje = "Tu asistencia quedó guardada correctamente.",
-            nota = if (sinConexion) "Sin conexión · se guardará en el teléfono" else null,
-            textoBoton = "VOLVER AL INICIO"
-        )
+        /** Marca válida. [rssi] es opcional: si no hay baliza BLE, no se muestra esa fila. */
+        fun aprobada(
+            hora: String,
+            rssi: Int? = null,
+            sinConexion: Boolean = false,
+            atrasada: Boolean = false
+        ): ResultadoMarca {
+            val checks = buildList {
+                add(CheckPresencia("GPS dentro de la faena", "SÍ", true))
+                if (rssi != null) add(CheckPresencia("Baliza BLE de la faena", "$rssi dBm", true))
+                add(CheckPresencia("Ubicación simulada", "NO", true))
+            }
+            return ResultadoMarca(
+                aprobada = true,
+                titulo = "MARCA REGISTRADA",
+                subtitulo = "Entrada registrada a las $hora",
+                checks = checks,
+                mensaje = if (atrasada) "Tu asistencia quedó guardada con atraso."
+                else "Tu asistencia quedó guardada correctamente.",
+                nota = when {
+                    sinConexion -> "Sin conexión · se guardará en el teléfono"
+                    atrasada -> "Marca fuera de la tolerancia del turno"
+                    else -> null
+                },
+                textoBoton = "VOLVER AL INICIO"
+            )
+        }
 
         /** Marca rechazada por ubicación simulada (Fake GPS). */
         fun rechazadaPorFakeGps(gpsEnFaena: Boolean = true) = ResultadoMarca(
@@ -83,6 +97,59 @@ data class ResultadoMarca(
                     "Luego acércate a la baliza de tu frente.",
             nota = "El intento quedó registrado.",
             textoBoton = "REINTENTAR"
+        )
+
+        /** Marca rechazada porque el operario está fuera del radio de la faena. */
+        fun rechazadaFueraDeFaena(distanciaMetros: Int) = ResultadoMarca(
+            aprobada = false,
+            titulo = "MARCA RECHAZADA",
+            subtitulo = "Estás fuera de la faena",
+            checks = listOf(
+                CheckPresencia("GPS dentro de la faena", "NO · A $distanciaMetros m", false),
+                CheckPresencia("Ubicación simulada", "NO", true)
+            ),
+            mensaje = "Acércate a la faena y vuelve a intentar.",
+            nota = "El intento quedó registrado.",
+            textoBoton = "REINTENTAR"
+        )
+
+        /** No se pudo leer el GPS (sin permiso, GPS apagado o error). No se guarda nada. */
+        fun sinUbicacion(motivo: String) = ResultadoMarca(
+            aprobada = false,
+            titulo = "SIN UBICACIÓN",
+            subtitulo = "No se pudo leer tu ubicación",
+            checks = listOf(
+                CheckPresencia("GPS dentro de la faena", "SIN DATOS", false)
+            ),
+            mensaje = motivo,
+            nota = null,
+            textoBoton = "REINTENTAR"
+        )
+        /** Intenta marcar salida sin haber marcado entrada. */
+        fun sinEntrada() = ResultadoMarca(
+            aprobada = false,
+            titulo = "SIN ENTRADA",
+            subtitulo = "No registraste tu entrada hoy",
+            checks = listOf(
+                CheckPresencia("Entrada del día", "NO REGISTRADA", false)
+            ),
+            mensaje = "Primero marca tu entrada y luego la salida.",
+            nota = null,
+            textoBoton = "ENTENDIDO"
+        )
+
+        /** Salida registrada correctamente. */
+        fun salidaRegistrada(hora: String) = ResultadoMarca(
+            aprobada = true,
+            titulo = "SALIDA REGISTRADA",
+            subtitulo = "Salida registrada a las $hora",
+            checks = listOf(
+                CheckPresencia("GPS dentro de la faena", "SÍ", true),
+                CheckPresencia("Ubicación simulada", "NO", true)
+            ),
+            mensaje = "Tu jornada quedó cerrada correctamente.",
+            nota = null,
+            textoBoton = "VOLVER AL INICIO"
         )
     }
 }
