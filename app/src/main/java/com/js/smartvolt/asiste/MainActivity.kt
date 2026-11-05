@@ -102,7 +102,7 @@ class MainActivity : FragmentActivity() {
                         )
                     }
 
-                    "inicio" -> MainView(codigoOperario = codigoOperario ?: "OP-014")
+                    "inicio" -> MainView(codigoOperario = codigoOperario ?: "OP-014", onCerrarSesion = { vm.limpiarEstado(); pantalla = "login" })
                     "admin" -> AdminMainView()
                 }
             }

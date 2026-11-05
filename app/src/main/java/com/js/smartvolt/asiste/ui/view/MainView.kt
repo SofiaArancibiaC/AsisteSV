@@ -1,15 +1,17 @@
 package com.js.smartvolt.asiste.ui.view
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.js.smartvolt.asiste.ui.components.HamburgerScaffold
+import com.js.smartvolt.asiste.ui.components.UserBottomBar
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.js.smartvolt.asiste.model.admin.Faena
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
@@ -17,20 +19,18 @@ import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
 import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModel
 import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModelFactory
 import java.time.LocalDate
-import java.time.LocalTime
 
 @Composable
-fun MainView(codigoOperario: String = "OP-014") {
+fun MainView(codigoOperario: String = "OP-014", onCerrarSesion: () -> Unit = {}) {
     val context = LocalContext.current
     val dao = remember { DatabaseProvider.getAsistenciaDao(context) }
     val ubicacion = remember { UbicacionProvider(context) }
 
-    val alertaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAlertaDao(context)
+    val alertaDao = DatabaseProvider.getAlertaDao(context)
     val vm: AsistenciaViewModel = viewModel(
         factory = AsistenciaViewModelFactory(dao, ubicacion, alertaDao)
     )
 
-    // Demo. Cambia latitud/longitud por las de tu faena real.
     val faena = remember {
         Faena(
             id = 1,
@@ -42,14 +42,14 @@ fun MainView(codigoOperario: String = "OP-014") {
             radioMetros = 100.0
         )
     }
-    val scope = rememberCoroutineScope()
-    val asistenciaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAsistenciaDao(context)
-    val turnoDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getTurnoDao(context)
-    val usuarioDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getUsuarioDao(context)
+    val asistenciaDao = DatabaseProvider.getAsistenciaDao(context)
+    val turnoDao = DatabaseProvider.getTurnoDao(context)
+    val usuarioDao = DatabaseProvider.getUsuarioDao(context)
     var selectedTab by remember { mutableStateOf(0) }
     var resultadoMarca by remember { mutableStateOf<ResultadoMarca?>(null) }
     var inicioTurno by remember { mutableStateOf(java.time.LocalTime.of(8,0)) }
     var finTurno by remember { mutableStateOf(java.time.LocalTime.of(14,0)) }
+    var vistaExtra by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(codigoOperario) {
         val u = usuarioDao.getByCodigo(codigoOperario)
         if (u != null) {
@@ -63,7 +63,10 @@ fun MainView(codigoOperario: String = "OP-014") {
         }
     }
 
-
+    BackHandler(enabled = true) {
+        if (vistaExtra != null) vistaExtra = null
+        else if (selectedTab != 0) selectedTab = 0
+    }
 
     if (resultadoMarca != null) {
         MarcaResultadoScreen(
@@ -73,46 +76,47 @@ fun MainView(codigoOperario: String = "OP-014") {
         return
     }
 
-    Scaffold(
+    if (vistaExtra != null) {
+        HamburgerScaffold(
+            title = if (vistaExtra == "config") "Configuración" else "Perfil",
+            onConfiguracion = { vistaExtra = "config" },
+            onPerfil = { vistaExtra = "perfil" },
+            onCerrarSesion = onCerrarSesion,
+            content = { padding ->
+                Box(Modifier.padding(padding)) {
+                    if (vistaExtra == "config") ConfiguracionView() else PerfilView(codigoOperario = codigoOperario)
+                }
+            }
+        )
+        return
+    }
+
+    HamburgerScaffold(
+        title = "AsisteSV",
+        onConfiguracion = { vistaExtra = "config" },
+        onPerfil = { vistaExtra = "perfil" },
+        onCerrarSesion = onCerrarSesion,
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
+            UserBottomBar(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
+        },
+        content = { padding ->
+            when (selectedTab) {
+                0 -> InicioRoute(
+                    viewModel = vm,
+                    faena = faena,
+                    codigoOperario = "OP-014",
+                    fecha = LocalDate.now(),
+                    inicioTurno = inicioTurno,
+                    finTurno = finTurno,
+                    frente = "Frente 2",
+                    sinConexion = false,
+                    onResultado = { resultadoMarca = it },
+                    onVerCalendario = { selectedTab = 1 },
+                    modifier = Modifier.padding(padding)
                 )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendario") },
-                    label = { Text("Calendario") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = { Icon(Icons.Default.History, contentDescription = "Historial") },
-                    label = { Text("Historial") }
-                )
+                1 -> Box(Modifier.padding(padding)) { CalendarioView(codigoOperario = codigoOperario) }
+                2 -> Box(Modifier.padding(padding)) { HistorialView() }
             }
         }
-    ) { padding ->
-        when (selectedTab) {
-            0 -> InicioRoute(
-                viewModel = vm,
-                faena = faena,
-                codigoOperario = "OP-014",
-                fecha = LocalDate.now(),
-                inicioTurno = inicioTurno,
-                finTurno = finTurno,
-                frente = "Frente 2",
-                sinConexion = false,
-                onResultado = { resultadoMarca = it },
-                onVerCalendario = { selectedTab = 1 },
-                modifier = Modifier.padding(padding)
-            )
-            1 -> CalendarioView(codigoOperario = codigoOperario)
-            2 -> HistorialView()
-        }
-    }
+    )
 }

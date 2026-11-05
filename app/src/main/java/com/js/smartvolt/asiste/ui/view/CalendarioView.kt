@@ -133,7 +133,6 @@ fun CalendarioView(codigoOperario: String = "OP-014") {
     val turnos by (if (usuarioId != 0L) turnoDao.getByUsuario(usuarioId) else turnoDao.getAll()).collectAsState(initial = emptyList())
 
     Column {
-        Text("DEBUG codigo=$codigoOperario usuarioId=$usuarioId turnos=${turnos.size}", modifier = Modifier.padding(8.dp))
         CalendarioContenido(
             dias = dias,
             seleccionado = seleccionado,

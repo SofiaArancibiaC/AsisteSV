@@ -60,7 +60,9 @@ App Android (Kotlin + Jetpack Compose) de asistencia/turnos. Package `com.js.sma
 - Corregido crash al login de usuario normal: InicioRoute ya no lanza permisos automáticamente en LaunchedEffect (evita requestCode inválido); se muestra botón para pedir permiso.
 - Corregido segundo crash al tocar "Marcar": se reemplazó launcher.launch por ActivityCompat.requestPermissions con requestCode válido (1001).
 - AsistenciaViewModel ahora crea Alerta (REVISION) cuando la marca es rechazada por ubicación simulada o fuera de faena; se inyecta AlertaDao y codigoOperario.
+- Navbars movidas a componentes reutilizables en `ui/components/BottomBars.kt` (AdminBottomBar, UserBottomBar); usadas en AdminMainView y MainView.
 - AdminTurnosView ahora ofrece solo dos turnos: AM 08:00-14:00 y PM 15:00-21:00 (dropdown), guardando horario de inicio.
 - Eliminación de turnos en admin ahora usa coroutine (scope.launch) para que el Flow de turnos se actualice en calendario.
 - Datos de prueba movidos de MainActivity a AsisteApp (Application), que siembra usuarios por defecto en Room. MainActivity ya no inyecta datos a mano.
 - Componente de botón con degradado creado en `ui/components/Buttons.kt` (GradientButton) listo para usar en vistas de usuario.
+- Menú hamburguesa (3 barras) movido a componente reutilizable `ui/components/DrawerMenu.kt` (HamburgerScaffold) usado en MainView; vistas ConfiguracionView y PerfilView scrolleables. BackHandler evita salir de la app y vuelve a MainView desde vistas extra. Padding aplicado a CalendarioView/HistorialView para evitar solapamiento con TopAppBar. Opción "Cerrar sesión" agregada al menú. PerfilView muestra datos del usuario (nombre, correo, código, faena, rol, activo) sin contraseña. ConfiguracionView incluye permisos y toggle de modo oscuro. CommonButton disponible en `ui/components/Buttons.kt` y usado en ConfiguracionView.
