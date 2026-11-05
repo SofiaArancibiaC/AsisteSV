@@ -16,7 +16,7 @@ data class Asistencia(
     val finTurno: LocalTime? = null,
     val registroSalida: LocalTime? = null,
     val latitud: Double? = null,
-    val longitud: Double? = null
+    val longitud: Double? = null,
     val registro: LocalTime? = null,
     val usuarioId: Long? = null
 )

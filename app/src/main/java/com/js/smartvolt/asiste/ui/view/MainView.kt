@@ -25,8 +25,9 @@ fun MainView(codigoOperario: String = "OP-014") {
     val dao = remember { DatabaseProvider.getAsistenciaDao(context) }
     val ubicacion = remember { UbicacionProvider(context) }
 
+    val alertaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAlertaDao(context)
     val vm: AsistenciaViewModel = viewModel(
-        factory = AsistenciaViewModelFactory(dao, ubicacion)
+        factory = AsistenciaViewModelFactory(dao, ubicacion, alertaDao)
     )
 
     // Demo. Cambia latitud/longitud por las de tu faena real.
@@ -41,11 +42,9 @@ fun MainView(codigoOperario: String = "OP-014") {
             radioMetros = 100.0
         )
     }
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val asistenciaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAsistenciaDao(context)
     val turnoDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getTurnoDao(context)
-    val alertaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAlertaDao(context)
     val usuarioDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getUsuarioDao(context)
     var selectedTab by remember { mutableStateOf(0) }
     var resultadoMarca by remember { mutableStateOf<ResultadoMarca?>(null) }
@@ -110,43 +109,6 @@ fun MainView(codigoOperario: String = "OP-014") {
                 sinConexion = false,
                 onResultado = { resultadoMarca = it },
                 onVerCalendario = { selectedTab = 1 },
-                onMarcarEntrada = {
-                    scope.launch {
-                        val ahora = java.time.LocalTime.now() //editar para probar distintas marcas
-                        val fecha = java.time.LocalDate.now()
-                        val usuarioDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getUsuarioDao(context)
-                        val usuario = usuarioDao.getByCodigo(codigoOperario)
-                        val turnos = turnoDao.getByUsuario(usuario?.id ?: 0L).first()
-                        val turnoHoy = turnos.firstOrNull { it.dia == fecha }
-                        val inicioTurno = turnoHoy?.horario ?: java.time.LocalTime.of(8,0)
-                        val finTurno = inicioTurno.plusHours(6)
-                        val estado = when {
-                            turnoHoy == null -> com.js.smartvolt.asiste.model.EstadoAsistencia.RECHAZADA
-                            ahora.isBefore(inicioTurno) || ahora.isAfter(finTurno) -> com.js.smartvolt.asiste.model.EstadoAsistencia.RECHAZADA
-                            ahora.isAfter(inicioTurno.plusMinutes(10)) -> com.js.smartvolt.asiste.model.EstadoAsistencia.ATRASADA
-                            else -> com.js.smartvolt.asiste.model.EstadoAsistencia.CUMPLIDA
-                        }
-                        val asistencia = com.js.smartvolt.asiste.model.Asistencia(
-                            fecha = fecha,
-                            estado = estado,
-                            inicioTurno = inicioTurno,
-                            registro = ahora,
-                            usuarioId = usuario?.id
-                        )
-                        asistenciaDao.upsert(asistencia)
-                        if (estado == com.js.smartvolt.asiste.model.EstadoAsistencia.RECHAZADA) {
-                            alertaDao.upsert(com.js.smartvolt.asiste.model.admin.Alerta(
-                                codigoOperario = codigoOperario,
-                                tipoMarca = com.js.smartvolt.asiste.model.admin.TipoMarca.ENTRADA,
-                                hora = ahora,
-                                faenaId = usuario?.faenaId ?: 0L,
-                                motivo = "Marca fuera de turno",
-                                estado = "REVISION"
-                            ))
-                        }
-                    }
-                    resultadoMarca = ResultadoMarca.aprobada("07:56", -62)
-                },
                 modifier = Modifier.padding(padding)
             )
             1 -> CalendarioView(codigoOperario = codigoOperario)

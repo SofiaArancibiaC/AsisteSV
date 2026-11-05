@@ -56,6 +56,10 @@ App Android (Kotlin + Jetpack Compose) de asistencia/turnos. Package `com.js.sma
 - Reporte de horas ahora permite seleccionar faena (dropdown) y período mensual (dropdown últimos 6 meses); filtra usuarios por faena y asistencias/horas extra por mes.
 - Marca en MainView ahora registra Asistencia en Room y genera Alerta (REVISION) si la marca es fuera del turno. Estado: CUMPLIDA dentro de tolerancia, ATRASADA si >10 min, RECHAZADA si fuera del rango.
 - MainView ahora carga el turno activo del día desde Room y lo muestra en InicioView (inicio/fin), en lugar de horario fijo.
+- Corregido error de compilación en Asistencia (coma faltante) y llamada inválida a InicioRoute (onMarcarEntrada no existe). Build debug exitoso.
+- Corregido crash al login de usuario normal: InicioRoute ya no lanza permisos automáticamente en LaunchedEffect (evita requestCode inválido); se muestra botón para pedir permiso.
+- Corregido segundo crash al tocar "Marcar": se reemplazó launcher.launch por ActivityCompat.requestPermissions con requestCode válido (1001).
+- AsistenciaViewModel ahora crea Alerta (REVISION) cuando la marca es rechazada por ubicación simulada o fuera de faena; se inyecta AlertaDao y codigoOperario.
 - AdminTurnosView ahora ofrece solo dos turnos: AM 08:00-14:00 y PM 15:00-21:00 (dropdown), guardando horario de inicio.
 - Eliminación de turnos en admin ahora usa coroutine (scope.launch) para que el Flow de turnos se actualice en calendario.
 - Datos de prueba movidos de MainActivity a AsisteApp (Application), que siembra usuarios por defecto en Room. MainActivity ya no inyecta datos a mano.

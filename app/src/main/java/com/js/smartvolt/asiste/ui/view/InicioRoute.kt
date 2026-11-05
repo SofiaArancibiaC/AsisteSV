@@ -98,7 +98,10 @@ fun InicioRoute(
             )
         } else {
             yaPregunto = true
-            launcher.launch(PERMISOS_UBICACION)
+            val activity = context.findActivity()
+            if (activity != null) {
+                ActivityCompat.requestPermissions(activity, PERMISOS_UBICACION, 1001)
+            }
         }
     }
 
@@ -108,7 +111,7 @@ fun InicioRoute(
             permisoConcedido = true
             viewModel.actualizarPresencia(faena)
         } else {
-            pedirPermiso()
+            permisoConcedido = false
         }
     }
 
@@ -168,7 +171,7 @@ fun InicioRoute(
                 !permisoConcedido -> pedirPermiso()
                 salidaHecha -> Unit
                 entradaHecha -> viewModel.marcarSalida(faena, fecha, sinConexion)
-                else -> viewModel.marcarEntrada(faena, fecha, inicioTurno, finTurno, sinConexion)
+                else -> viewModel.marcarEntrada(faena, fecha, inicioTurno, finTurno, sinConexion, codigoOperario)
             }
         },
         onVerCalendario = onVerCalendario,

@@ -40,7 +40,8 @@ data class PresenciaUi(
 @OptIn(ExperimentalCoroutinesApi::class)
 class AsistenciaViewModel(
     private val dao: AsistenciaDAO,
-    private val ubicacion: UbicacionProvider
+    private val ubicacion: UbicacionProvider,
+    private val alertaDao: com.js.smartvolt.asiste.model.data.local.AlertaDao? = null
 ) : ViewModel() {
 
     // ---------- Calendario ----------
@@ -95,7 +96,8 @@ class AsistenciaViewModel(
         fecha: LocalDate,
         inicioTurno: LocalTime,
         finTurno: LocalTime,
-        sinConexion: Boolean = false
+        sinConexion: Boolean = false,
+        codigoOperario: String = "OP-014"
     ) {
         if (marcando) return
         marcando = true
@@ -128,11 +130,27 @@ class AsistenciaViewModel(
 
                     lectura.simulada -> {
                         dao.upsert(nuevaAsistencia(fecha, EstadoAsistencia.RECHAZADA, inicioTurno, finTurno, registro, lat, lng))
+                        alertaDao?.upsert(com.js.smartvolt.asiste.model.admin.Alerta(
+                            codigoOperario = codigoOperario,
+                            tipoMarca = com.js.smartvolt.asiste.model.admin.TipoMarca.ENTRADA,
+                            hora = registro,
+                            faenaId = faena.id,
+                            motivo = "Ubicación simulada",
+                            estado = "REVISION"
+                        ))
                         _resultado.value = ResultadoMarca.rechazadaPorFakeGps(lectura.dentroFaena)
                     }
 
                     !lectura.dentroFaena -> {
                         dao.upsert(nuevaAsistencia(fecha, EstadoAsistencia.RECHAZADA, inicioTurno, finTurno, registro, lat, lng))
+                        alertaDao?.upsert(com.js.smartvolt.asiste.model.admin.Alerta(
+                            codigoOperario = codigoOperario,
+                            tipoMarca = com.js.smartvolt.asiste.model.admin.TipoMarca.ENTRADA,
+                            hora = registro,
+                            faenaId = faena.id,
+                            motivo = "Fuera de faena",
+                            estado = "REVISION"
+                        ))
                         _resultado.value = ResultadoMarca.rechazadaFueraDeFaena(
                             (lectura.distanciaMetros ?: 0f).toInt()
                         )
@@ -262,10 +280,11 @@ class AsistenciaViewModel(
 
 class AsistenciaViewModelFactory(
     private val dao: AsistenciaDAO,
-    private val ubicacion: UbicacionProvider
+    private val ubicacion: UbicacionProvider,
+    private val alertaDao: com.js.smartvolt.asiste.model.data.local.AlertaDao? = null
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return AsistenciaViewModel(dao, ubicacion) as T
+        return AsistenciaViewModel(dao, ubicacion, alertaDao) as T
     }
 }
