@@ -67,6 +67,8 @@ fun OlvideContrasenaView(
     val campoBorde = if (dark) Color(0xFF26324D) else Color(0xFFD1D5DB)
     val textoClaro = if (dark) Color(0xFFE5E7EB) else Color(0xFF1F2937)
     val textoGris = if (dark) Color(0xFF8B94A7) else Color(0xFF6B7280)
+    // Amarillo neón solo en oscuro; en claro se usa un ámbar más oscuro para legibilidad
+    val Amarillo = if (dark) Color(0xFFE6FF0A) else Color(0xFFB38600)
 
     var correo by remember { mutableStateOf("") }
 

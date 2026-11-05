@@ -161,6 +161,7 @@ fun AdminUsuariosView(onNew: () -> Unit, onOpenPerfil: (String) -> Unit) {
     val dao = DatabaseProvider.getUsuarioDao(context)
     val vm: UsuarioViewModel = viewModel(factory = UsuarioViewModelFactory(dao))
     val usuarios by vm.usuarios.collectAsState()
+    val usuariosVisibles = usuarios.filter { !it.correo.contains("admin", ignoreCase = true) }
 
     Column(
         Modifier
@@ -171,7 +172,7 @@ fun AdminUsuariosView(onNew: () -> Unit, onOpenPerfil: (String) -> Unit) {
 
         Spacer(Modifier.height(Medidas.EspacioS))
 
-        BadgeEstado("Total: ${usuarios.size} usuarios", MaterialTheme.colorScheme.primary)
+        BadgeEstado("Total: ${usuariosVisibles.size} usuarios", MaterialTheme.colorScheme.primary)
 
         Spacer(Modifier.height(Medidas.EspacioM))
 
@@ -188,8 +189,8 @@ fun AdminUsuariosView(onNew: () -> Unit, onOpenPerfil: (String) -> Unit) {
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(usuarios) { u ->
-                    Panel(onClick = { onOpenPerfil(u.correo) }) {
+                items(usuariosVisibles) { u ->
+                    Panel(onClick = { onOpenPerfil(u.codigoUsuario ?: u.correo) }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Avatar(u.nombre.ifBlank { u.correo })
                             Spacer(Modifier.width(Medidas.EspacioM))
@@ -335,6 +336,8 @@ fun AdminNuevoUsuarioView(onBack: () -> Unit) {
     var nombre by remember { mutableStateOf("") }
     var selectedFaenaId by remember { mutableStateOf(0L) }
     var expanded by remember { mutableStateOf(false) }
+    var selectedRol by remember { mutableStateOf(Rol.OPERARIO) }
+    var expandRol by remember { mutableStateOf(false) }
 
     LaunchedEffect(faenas) {
         if (selectedFaenaId == 0L && faenas.isNotEmpty()) selectedFaenaId = faenas.first().id
@@ -408,6 +411,29 @@ fun AdminNuevoUsuarioView(onBack: () -> Unit) {
 
         Spacer(Modifier.height(Medidas.EspacioM))
 
+        ExposedDropdownMenuBox(expanded = expandRol, onExpandedChange = { expandRol = !expandRol }) {
+            OutlinedTextField(
+                value = selectedRol.name,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Rol") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandRol) },
+                shape = MaterialTheme.shapes.medium,
+                colors = colorsCampo(),
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(expanded = expandRol, onDismissRequest = { expandRol = false }) {
+                Rol.values().forEach { r ->
+                    DropdownMenuItem(
+                        text = { Text(r.name) },
+                        onClick = { selectedRol = r; expandRol = false }
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(Medidas.EspacioM))
+
         Text(
             text = "La contraseña inicial será \"123456\".",
             style = MaterialTheme.typography.bodyMedium,
@@ -431,7 +457,7 @@ fun AdminNuevoUsuarioView(onBack: () -> Unit) {
                     dao.insertarUsuario(
                         Usuario(
                             codigo = codigo,
-                            rol = Rol.OPERARIO,
+                            rol = selectedRol,
                             faenaId = selectedFaenaId,
                             activo = true
                         )
@@ -490,30 +516,15 @@ fun AdminTurnosView(codigo: String, onBack: () -> Unit) {
         Spacer(Modifier.height(Medidas.EspacioL))
 
         Panel {
-            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                OutlinedTextField(
-                    value = selectedUsuarioCodigo,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Operario") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    shape = MaterialTheme.shapes.medium,
-                    colors = colorsCampo(),
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    operarios.forEach { u ->
-                        DropdownMenuItem(
-                            text = { Text(u.codigo) },
-                            onClick = {
-                                selectedUsuarioId = u.id
-                                selectedUsuarioCodigo = u.codigo
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
+            OutlinedTextField(
+                value = selectedUsuarioCodigo,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Operario") },
+                shape = MaterialTheme.shapes.medium,
+                colors = colorsCampo(),
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(Modifier.height(Medidas.EspacioM))
 
@@ -633,7 +644,7 @@ fun AdminTurnosView(codigo: String, onBack: () -> Unit) {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
                         dia = java.time.Instant.ofEpochMilli(it)
-                            .atZone(java.time.ZoneId.systemDefault())
+                            .atZone(java.time.ZoneId.of("UTC"))
                             .toLocalDate()
                             .toString()
                     }
@@ -919,7 +930,7 @@ fun AdminHorasExtraView(codigo: String, onBack: () -> Unit) {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
                         fecha = java.time.Instant.ofEpochMilli(it)
-                            .atZone(java.time.ZoneId.systemDefault())
+                            .atZone(java.time.ZoneId.of("UTC"))
                             .toLocalDate()
                             .toString()
                     }

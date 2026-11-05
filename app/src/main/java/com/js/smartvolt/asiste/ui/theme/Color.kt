@@ -41,7 +41,9 @@ val TextoOscuroGris = Color(0xFF5B6478)
 
 val NaranjaClaro = Color(0xFFE0510F)
 val VerdeClaro = Color(0xFF0F9D75)
-val AmbarClaro = Color(0xFFB38600)
+val AmbarClaro = Color(0xFFDEB138)
+
+val Beige = Color(0xFFFFE791)
 val RojoClaro = Color(0xFFD32F2F)
 val GrisClaro = Color(0xFF6B7280)
 
@@ -50,10 +52,10 @@ val GrisClaro = Color(0xFF6B7280)
 // ---------------------------------------------------------------
 val DegradadoFondo: Brush = Brush.verticalGradient(listOf(FondoArriba, FondoAbajo))
 val DegradadoFondoClaro: Brush = Brush.verticalGradient(listOf(FondoClaroArriba, FondoClaroAbajo))
-val DegradadoMarca: Brush = Brush.horizontalGradient(listOf(Amarillo, Amarillo))
+val DegradadoMarca: Brush = Brush.horizontalGradient(listOf(Beige, AmbarClaro))
 
 /** Degradado de acción (botón principal). Igual en ambos temas. */
-val DegradadoAccion: Brush = Brush.horizontalGradient(listOf(Amarillo, Naranja))
+val DegradadoAccion: Brush = Brush.horizontalGradient(listOf(Beige, AmbarClaro))
 
 val LocalDegradadoFondo = staticCompositionLocalOf { DegradadoFondo }
 

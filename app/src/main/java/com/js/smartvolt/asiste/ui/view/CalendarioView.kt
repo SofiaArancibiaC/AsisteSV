@@ -351,6 +351,11 @@ fun CalendarioContenido(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
+                Text(text = "Los días con un punto son horas extras asignadas",
+                    color = cs.onSurfaceVariant,
+                    fontSize = 13.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center)
             }
         }
     }
@@ -496,15 +501,22 @@ private fun Modifier.bordeDiscontinuo(
 @Composable
 private fun Leyenda() {
     val estados = LocalEstadoColors.current
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        ItemLeyenda("Cumplida", estados.cumplida)
-        ItemLeyenda("Atrasada", estados.atrasada)
-        ItemLeyenda("Falta", estados.falta)
-        ItemLeyenda("Próximo", null)
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            ItemLeyenda("Cumplida", estados.cumplida)
+            ItemLeyenda("Atrasada", estados.atrasada)
+            ItemLeyenda("Falta", estados.falta)
+        }
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            ItemLeyenda("Rechazada", estados.rechazada)
+            ItemLeyenda("En Revisión", estados.enRevision)
+            ItemLeyenda("Próximo", null)
+        }
     }
 }
 

@@ -140,7 +140,7 @@ fun AdminPanelView(onOpenAlertas: () -> Unit, onOpenUsuarios: () -> Unit, onOpen
         }
 
         Spacer(Modifier.height(16.dp))
-        GradientButton(text = "VER REPORTE DE HORAS", onClick = onOpenReporte)
+        CommonButton(text = "VER REPORTE DE HORAS", onClick = onOpenReporte, modifier = Modifier.fillMaxWidth())
     }
 }
 
