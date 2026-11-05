@@ -22,6 +22,9 @@ interface UsuarioDAO{
     @Query("SELECT * FROM usuario WHERE id = :id")
     fun getById(id: Long): Flow<Usuario?>
 
+    @Query("SELECT * FROM usuario WHERE codigo = :codigo LIMIT 1")
+    suspend fun getByCodigo(codigo: String): Usuario?
+
     @Query("SELECT COUNT(*) FROM recupera_usuario WHERE correo = :correo")
     suspend fun existeCorreo(correo: String): Int
 
@@ -33,6 +36,9 @@ interface UsuarioDAO{
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(usuario: RecuperarUsuario)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarUsuario(usuario: com.js.smartvolt.asiste.model.admin.Usuario)
 
     @Delete
     suspend fun delete(entity: Usuario)

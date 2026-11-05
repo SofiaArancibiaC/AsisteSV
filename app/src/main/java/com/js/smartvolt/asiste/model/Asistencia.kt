@@ -12,5 +12,6 @@ data class Asistencia(
     val fecha: LocalDate,
     val estado: EstadoAsistencia,
     val inicioTurno: LocalTime,
-    val registro: LocalTime? = null
+    val registro: LocalTime? = null,
+    val usuarioId: Long? = null
 )

@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class RecuperarUsuario(
     @PrimaryKey val correo: String,
     val nombre : String,
-    val passwordHash : String
+    val passwordHash : String,
+    val codigoUsuario : String? = null
 )

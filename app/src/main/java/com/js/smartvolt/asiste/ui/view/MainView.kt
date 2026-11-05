@@ -6,13 +6,36 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
-fun MainView() {
+fun MainView(codigoOperario: String = "OP-014") {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val asistenciaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAsistenciaDao(context)
+    val turnoDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getTurnoDao(context)
+    val alertaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAlertaDao(context)
+    val usuarioDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getUsuarioDao(context)
     var selectedTab by remember { mutableStateOf(0) }
     var resultadoMarca by remember { mutableStateOf<ResultadoMarca?>(null) }
+    var inicioTurno by remember { mutableStateOf(java.time.LocalTime.of(8,0)) }
+    var finTurno by remember { mutableStateOf(java.time.LocalTime.of(14,0)) }
+    LaunchedEffect(codigoOperario) {
+        val u = usuarioDao.getByCodigo(codigoOperario)
+        if (u != null) {
+            val turnos = turnoDao.getByUsuario(u.id).first()
+            val hoy = java.time.LocalDate.now()
+            val t = turnos.firstOrNull { it.dia == hoy && it.activo }
+            if (t != null) {
+                inicioTurno = t.horario
+                finTurno = t.horario.plusHours(6)
+            }
+        }
+    }
 
     if (resultadoMarca != null) {
         MarcaResultadoScreen(
@@ -51,15 +74,51 @@ fun MainView() {
                 codigoOperario = "OP-014",
                 nombreFaena = "Faena Ruta 5 Norte",
                 fecha = LocalDate.now(),
-                inicioTurno = LocalTime.of(8, 0),
-                finTurno = LocalTime.of(18, 0),
+                inicioTurno = inicioTurno,
+                finTurno = finTurno,
                 frente = "Frente 2",
                 validacion = ValidacionPresencia(true, true, -62),
                 sinConexion = false,
-                onMarcarEntrada = { resultadoMarca = ResultadoMarca.aprobada("07:56", -62) },
+                onMarcarEntrada = {
+                    scope.launch {
+                        val ahora = java.time.LocalTime.now() //editar para probar distintas marcas
+                        val fecha = java.time.LocalDate.now()
+                        val usuarioDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getUsuarioDao(context)
+                        val usuario = usuarioDao.getByCodigo(codigoOperario)
+                        val turnos = turnoDao.getByUsuario(usuario?.id ?: 0L).first()
+                        val turnoHoy = turnos.firstOrNull { it.dia == fecha }
+                        val inicioTurno = turnoHoy?.horario ?: java.time.LocalTime.of(8,0)
+                        val finTurno = inicioTurno.plusHours(6)
+                        val estado = when {
+                            turnoHoy == null -> com.js.smartvolt.asiste.model.EstadoAsistencia.RECHAZADA
+                            ahora.isBefore(inicioTurno) || ahora.isAfter(finTurno) -> com.js.smartvolt.asiste.model.EstadoAsistencia.RECHAZADA
+                            ahora.isAfter(inicioTurno.plusMinutes(10)) -> com.js.smartvolt.asiste.model.EstadoAsistencia.ATRASADA
+                            else -> com.js.smartvolt.asiste.model.EstadoAsistencia.CUMPLIDA
+                        }
+                        val asistencia = com.js.smartvolt.asiste.model.Asistencia(
+                            fecha = fecha,
+                            estado = estado,
+                            inicioTurno = inicioTurno,
+                            registro = ahora,
+                            usuarioId = usuario?.id
+                        )
+                        asistenciaDao.upsert(asistencia)
+                        if (estado == com.js.smartvolt.asiste.model.EstadoAsistencia.RECHAZADA) {
+                            alertaDao.upsert(com.js.smartvolt.asiste.model.admin.Alerta(
+                                codigoOperario = codigoOperario,
+                                tipoMarca = com.js.smartvolt.asiste.model.admin.TipoMarca.ENTRADA,
+                                hora = ahora,
+                                faenaId = usuario?.faenaId ?: 0L,
+                                motivo = "Marca fuera de turno",
+                                estado = "REVISION"
+                            ))
+                        }
+                    }
+                    resultadoMarca = ResultadoMarca.aprobada("07:56", -62)
+                },
                 modifier = Modifier.padding(padding)
             )
-            1 -> CalendarioView()
+            1 -> CalendarioView(codigoOperario = codigoOperario)
             2 -> HistorialView()
         }
     }

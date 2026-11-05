@@ -29,6 +29,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
@@ -102,7 +105,7 @@ private fun EstadoColors.de(estado: EstadoAsistencia): Color = when (estado) {
 // Versión con ViewModel (la que usas en la navegación)
 // ============================================================
 @Composable
-fun CalendarioView() {
+fun CalendarioView(codigoOperario: String = "OP-014") {
     val context = LocalContext.current
     val dao = remember { DatabaseProvider.getDao(context) }
     val vm: AsistenciaViewModel = viewModel(factory = AsistenciaViewModelFactory(dao))
@@ -116,13 +119,37 @@ fun CalendarioView() {
     }
     val seleccionado = remember(selected) { selected?.aUi(formatoHora) }
 
-    CalendarioContenido(
-        dias = dias,
-        seleccionado = seleccionado,
-        onMesVisible = { vm.setMonth(it) },
-        onSeleccionar = { vm.selectDate(it) },
-        onLimpiar = { vm.clearSelection() }
-    )
+    val usuarioDao = remember { DatabaseProvider.getUsuarioDao(context) }
+    val turnoDao = remember { DatabaseProvider.getTurnoDao(context) }
+    var usuarioId by remember { mutableStateOf(0L) }
+    LaunchedEffect(codigoOperario) {
+        val u = usuarioDao.getByCodigo(codigoOperario)
+        if (u != null) usuarioId = u.id
+    }
+    val turnos by (if (usuarioId != 0L) turnoDao.getByUsuario(usuarioId) else turnoDao.getAll()).collectAsState(initial = emptyList())
+
+    Column {
+        Text("DEBUG codigo=$codigoOperario usuarioId=$usuarioId turnos=${turnos.size}", modifier = Modifier.padding(8.dp))
+        CalendarioContenido(
+            dias = dias,
+            seleccionado = seleccionado,
+            onMesVisible = { vm.setMonth(it) },
+            onSeleccionar = { vm.selectDate(it) },
+            onLimpiar = { vm.clearSelection() },
+            turnos = turnos.map { it.dia }.toSet()
+        )
+        if (turnos.isNotEmpty()) {
+            Text("Turnos asignados:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(8.dp))
+            turnos.forEach { t ->
+                Text("${t.dia} ${t.horario} ${if (t.activo) "Activo" else "Inactivo"}", modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+            }
+        }
+        selected?.let { sel ->
+            turnos.firstOrNull { it.dia == sel.fecha }?.let { t ->
+                Text("Turno del día: ${t.horario} (${if (t.activo) "Activo" else "Inactivo"})", modifier = Modifier.padding(8.dp))
+            }
+        }
+    }
 }
 
 // ============================================================
@@ -135,6 +162,7 @@ fun CalendarioContenido(
     onMesVisible: (YearMonth) -> Unit,
     onSeleccionar: (LocalDate) -> Unit,
     onLimpiar: () -> Unit,
+    turnos: Set<LocalDate> = emptySet(),
     modifier: Modifier = Modifier,
     hoy: LocalDate = LocalDate.now()
 ) {
@@ -285,6 +313,7 @@ fun CalendarioContenido(
                             hoy = hoy,
                             registro = dias[day.date],
                             seleccionado = seleccionado?.fecha == day.date,
+                            tieneTurno = turnos.contains(day.date),
                             onClick = {
                                 if (seleccionado?.fecha == day.date) onLimpiar()
                                 else onSeleccionar(day.date)
@@ -369,6 +398,7 @@ private fun DiaCalendario(
     hoy: LocalDate,
     registro: DiaAsistenciaUi?,
     seleccionado: Boolean,
+    tieneTurno: Boolean = false,
     onClick: () -> Unit
 ) {
     // Días que no pertenecen al mes: celda vacía para mantener la grilla
@@ -417,13 +447,19 @@ private fun DiaCalendario(
             .clickable(enabled = registro != null) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = dia.date.dayOfMonth.toString(),
-            color = colorTexto,
-            fontSize = 15.sp,
-            fontWeight = if (registro != null || esHoy || esProximo) FontWeight.ExtraBold
-            else FontWeight.Normal
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = dia.date.dayOfMonth.toString(),
+                color = colorTexto,
+                fontSize = 15.sp,
+                fontWeight = if (registro != null || esHoy || esProximo) FontWeight.ExtraBold
+                else FontWeight.Normal
+            )
+            if (tieneTurno) {
+                Spacer(Modifier.height(2.dp))
+                Box(Modifier.size(4.dp).clip(RoundedCornerShape(2.dp)).background(cs.primary))
+            }
+        }
     }
 }
 

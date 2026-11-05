@@ -13,11 +13,15 @@ import com.js.smartvolt.asiste.model.admin.Usuario
 
 @Database(
     entities = [Asistencia::class, RecuperarUsuario::class, Usuario::class, Alerta::class, Turno::class, HoraExtra::class, Faena::class],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun asistenciaDao(): AsistenciaDAO
     abstract fun usuarioDao(): UsuarioDAO
+    abstract fun faenaDao(): FaenaDao
+    abstract fun horaExtraDao(): HoraExtraDao
+    abstract fun turnoDao(): TurnoDAO
+    abstract fun alertaDao(): AlertaDao
 }
