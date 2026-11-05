@@ -49,6 +49,7 @@ class MainActivity : FragmentActivity() {
                 // ---- Navegación: "login" | "olvide" | "inicio" ----
                 var pantalla by remember { mutableStateOf("login") }
                 var esAdmin by remember { mutableStateOf(false) }
+                var codigoOperario by remember { mutableStateOf<String?>(null) }
 
                 val context = LocalContext.current
                 val usuarioDao = remember { DatabaseProvider.getUsuarioDao(context) }
@@ -58,7 +59,10 @@ class MainActivity : FragmentActivity() {
 
                 // Si el login fue exitoso -> pantalla de inicio
                 LaunchedEffect(estado) {
-                    if (estado is LoginEstado.Exito) pantalla = if (esAdmin) "admin" else "inicio"
+                    if (estado is LoginEstado.Exito) {
+                        codigoOperario = (estado as LoginEstado.Exito).codigo
+                        pantalla = if (esAdmin) "admin" else "inicio"
+                    }
                 }
 
                 // Botón atrás: desde cualquier pantalla vuelve al login
@@ -98,7 +102,7 @@ class MainActivity : FragmentActivity() {
                         )
                     }
 
-                    "inicio" -> MainView()
+                    "inicio" -> MainView(codigoOperario = codigoOperario ?: "OP-014", onCerrarSesion = { vm.limpiarEstado(); pantalla = "login" })
                     "admin" -> AdminMainView()
                 }
             }

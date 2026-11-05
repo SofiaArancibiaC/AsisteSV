@@ -36,7 +36,7 @@ private val AppColors = darkColorScheme(
     outlineVariant = CampoBorde,
     error = Rojo,
     onError = FondoArriba,
-    // Si tu versión de material3 es anterior a 1.2 y no compila, borra estas 5 líneas
+
     surfaceContainerLowest = FondoArriba,
     surfaceContainerLow = Color(0xFF0E1526),
     surfaceContainer = CampoFondo,

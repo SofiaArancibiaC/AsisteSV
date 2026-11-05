@@ -21,9 +21,20 @@ object DatabaseProvider {
     }
 
     fun getAsistenciaDao(context: Context): AsistenciaDAO = database(context).asistenciaDao()
-    fun getUsuarioDao(context: Context): UsuarioDAO = database(context).usuarioDao()
-    fun getFaenaDao(context: Context): FaenaDao = database(context).faenaDao()
 
-    // Compatibilidad
+    fun getUsuarioDao(context: Context): UsuarioDAO =
+        database(context).usuarioDao()
+
+    fun getFaenaDao(context: Context): FaenaDao =
+        database(context).faenaDao()
+
+    fun getHoraExtraDao(context: Context): HoraExtraDao =
+        database(context).horaExtraDao()
+
+    fun getTurnoDao(context: Context): TurnoDAO =
+        database(context).turnoDao()
+    fun getAlertaDao(context: Context): AlertaDao =
+        database(context).alertaDao()
+    // Compatibilidad: por defecto devuelve el DAO de asistencia
     fun getDao(context: Context): AsistenciaDAO = getAsistenciaDao(context)
 }

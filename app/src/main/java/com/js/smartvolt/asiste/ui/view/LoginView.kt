@@ -268,34 +268,6 @@ fun LoginView(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        val context = LocalContext.current
-        Button(
-            onClick = {
-                val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
-                val biometricManager = androidx.biometric.BiometricManager.from(context)
-                if (biometricManager.canAuthenticate(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS) {
-                    val executor = androidx.core.content.ContextCompat.getMainExecutor(context)
-                    val prompt = androidx.biometric.BiometricPrompt(activity, executor, object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
-                        override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) {
-                            onLogin(correo, pass)
-                        }
-                    })
-                    val info = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Autenticación biométrica")
-                        .setSubtitle("Usa tu huella o rostro")
-                        .setNegativeButtonText("Cancelar")
-                        .build()
-                    prompt.authenticate(info)
-                } else {
-                    onLogin(correo, pass)
-                }
-            },
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.fillMaxWidth().height(54.dp)
-        ) {
-            Text("INICIAR CON HUELLA")
-        }
-
     }
 }
 

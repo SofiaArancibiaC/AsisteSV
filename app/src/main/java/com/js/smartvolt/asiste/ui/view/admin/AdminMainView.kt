@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.js.smartvolt.asiste.ui.components.AdminBottomBar
 import androidx.compose.ui.unit.dp
 
 sealed class AdminScreen {
@@ -38,12 +39,14 @@ fun AdminMainView() {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(selected = selectedTab == 0, onClick = { current = AdminScreen.Panel }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Inicio") })
-                NavigationBarItem(selected = selectedTab == 1, onClick = { current = AdminScreen.Reportes }, icon = { Icon(Icons.Default.AlignVerticalBottom, null) }, label = { Text("Reportes") })
-                NavigationBarItem(selected = selectedTab == 2, onClick = { current = AdminScreen.Alertas }, icon = { Icon(Icons.Default.Notifications, null) }, label = { Text("Alertas") })
-                NavigationBarItem(selected = selectedTab == 3, onClick = { current = AdminScreen.Usuarios }, icon = { Icon(Icons.Default.Person, null) }, label = { Text("Usuarios") })
-            }
+            AdminBottomBar(selectedTab = selectedTab, onTabSelected = { t ->
+                current = when (t) {
+                    0 -> AdminScreen.Panel
+                    1 -> AdminScreen.Reportes
+                    2 -> AdminScreen.Alertas
+                    else -> AdminScreen.Usuarios
+                }
+            })
         }
     ) { padding ->
         Box(Modifier.padding(padding)) {

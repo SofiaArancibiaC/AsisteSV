@@ -13,6 +13,9 @@ interface TurnoDAO {
     @Query("SELECT * FROM turno WHERE usuarioId = :usuarioId")
     fun getByUsuario(usuarioId: Long): Flow<List<Turno>>
 
+    @Query("SELECT * FROM turno")
+    fun getAll(): Flow<List<Turno>>
+
     @Query("SELECT * FROM turno WHERE usuarioId = :usuarioId AND dia = :dia")
     fun getByUsuarioYDia(usuarioId: Long, dia: String): Flow<Turno?>
 

@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 sealed interface LoginEstado {
     data object Idle : LoginEstado
     data object Cargando : LoginEstado
-    data object Exito : LoginEstado
+    data class Exito(val codigo: String?) : LoginEstado
     data class Error(val mensaje: String) : LoginEstado
 }
 
@@ -24,8 +24,13 @@ class LoginViewModel(private val dao: UsuarioDAO) : ViewModel() {
     val estado: StateFlow<LoginEstado> = _estado.asStateFlow()
 
     fun login(correo: String, pass: String) {
-        if (correo.isBlank() || pass.isBlank()) {
+        val correoLimpio = correo.trim()
+        if (correoLimpio.isBlank() || pass.isBlank()) {
             _estado.value = LoginEstado.Error("Completa correo y contraseña")
+            return
+        }
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correoLimpio).matches()) {
+            _estado.value = LoginEstado.Error("Correo inválido")
             return
         }
         viewModelScope.launch {
@@ -33,7 +38,7 @@ class LoginViewModel(private val dao: UsuarioDAO) : ViewModel() {
             try {
                 val usuario = dao.login(correo.trim().lowercase(), sha256(pass))
                 _estado.value = if (usuario != null) {
-                    LoginEstado.Exito
+                    LoginEstado.Exito(usuario.codigoUsuario)
                 } else {
                     LoginEstado.Error("Correo o contraseña incorrectos")
                 }
