@@ -55,6 +55,8 @@ App Android (Kotlin + Jetpack Compose) de asistencia/turnos. Package `com.js.sma
 - Panel admin ahora se conecta a Room: muestra conteo real de asistencias y usuarios.
 - FaenaViewModel creado y DatabaseProvider/AppDatabase extendidos con FaenaDao; panel muestra conteo de faenas.
 - Panel admin ahora lista faenas dinámicamente desde Room; AsisteApp siembra 3 faenas de prueba si no existen.
+- Panel admin incluye botón "SIMULAR MARCAS" que inserta Asistencias CUMPLIDA para todos los usuarios del día seleccionado, permitiendo probar métricas en vivo.
+- Panel admin incluye botón "LIMPIAR MARCAS SIMULADAS" que elimina las asistencias simuladas (fecha del día + registro 08:05).
 - Vista de admin-alertas implementada: AdminAlertasView (filtros por faena/fecha/estado y lista de alertas) y AdminDetalleAlertaView (detalle y acciones validar/rechazar). Se expuso AlertaDao en AppDatabase y DatabaseProvider (getAlertaDao).
 - AdminDetalleAlertaView: botones VALIDAR/RECHAZAR ahora actualizan el estado de la alerta en Room (upsert) con scope coroutine; la UI refleja el nuevo estado.
 - Reporte de horas ahora permite seleccionar faena (dropdown) y período mensual (dropdown últimos 6 meses); filtra usuarios por faena y asistencias/horas extra por mes.

@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import kotlinx.coroutines.launch
 import java.time.Instant
 
 import java.time.LocalDate
@@ -31,6 +32,8 @@ fun AdminPanelView(onOpenAlertas: () -> Unit, onOpenUsuarios: () -> Unit, onOpen
     val vm: com.js.smartvolt.asiste.viewmodel.UsuarioViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.js.smartvolt.asiste.viewmodel.UsuarioViewModelFactory(usuarioDao))
     val usuarios by vm.usuarios.collectAsState()
     val asistencias by asistenciaDao.getAll().collectAsState(initial = emptyList())
+    val usuariosConFaena by usuarioDao.getUsuariosConFaena().collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
 
     var dia by remember { mutableStateOf(LocalDate.now()) }
     var faena by remember { mutableStateOf("Todas las faenas") }
@@ -140,6 +143,31 @@ fun AdminPanelView(onOpenAlertas: () -> Unit, onOpenUsuarios: () -> Unit, onOpen
         }
 
         Spacer(Modifier.height(16.dp))
+        CommonButton(text = "SIMULAR MARCAS", onClick = {
+            scope.launch {
+                usuariosConFaena.forEach { uf ->
+                    asistenciaDao.upsert(
+                        com.js.smartvolt.asiste.model.Asistencia(
+                            fecha = dia,
+                            estado = com.js.smartvolt.asiste.model.EstadoAsistencia.CUMPLIDA,
+                            inicioTurno = java.time.LocalTime.of(8, 0),
+                            finTurno = java.time.LocalTime.of(14, 0),
+                            registro = java.time.LocalTime.of(8, 5),
+                            usuarioId = uf.usuario.id
+                        )
+                    )
+                }
+            }
+        }, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(8.dp))
+        CommonButton(text = "LIMPIAR MARCAS SIMULADAS", onClick = {
+            scope.launch {
+                asistencias.filter { it.fecha == dia && it.registro == java.time.LocalTime.of(8, 5) }.forEach { a ->
+                    asistenciaDao.delete(a.id)
+                }
+            }
+        }, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(8.dp))
         CommonButton(text = "VER REPORTE DE HORAS", onClick = onOpenReporte, modifier = Modifier.fillMaxWidth())
     }
 }
