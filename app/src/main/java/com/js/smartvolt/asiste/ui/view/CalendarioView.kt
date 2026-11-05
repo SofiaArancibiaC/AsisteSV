@@ -62,6 +62,7 @@ import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
 import com.js.smartvolt.asiste.ui.theme.DegradadoMarca
 import com.js.smartvolt.asiste.ui.theme.EstadoColors
 import com.js.smartvolt.asiste.ui.theme.LocalEstadoColors
+import com.js.smartvolt.asiste.ui.theme.degradadoFondo
 import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModel
 import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModelFactory
 import com.kizitonwose.calendar.compose.HorizontalCalendar
@@ -77,7 +78,8 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-private val LOCALE_ES = Locale("es", "CL")
+private val LOCALE_ES: Locale = Locale.forLanguageTag("es-CL")
+
 
 /** Datos de un día ya formateados para mostrar (así la pantalla se puede previsualizar sin base de datos). */
 data class DiaAsistenciaUi(
@@ -125,12 +127,15 @@ fun CalendarioView(codigoOperario: String = "OP-014") {
 
     val usuarioDao = remember { DatabaseProvider.getUsuarioDao(context) }
     val turnoDao = remember { DatabaseProvider.getTurnoDao(context) }
+    val horaExtraDao = remember { DatabaseProvider.getHoraExtraDao(context) }
     var usuarioId by remember { mutableStateOf(0L) }
     LaunchedEffect(codigoOperario) {
         val u = usuarioDao.getByCodigo(codigoOperario)
         if (u != null) usuarioId = u.id
     }
     val turnos by (if (usuarioId != 0L) turnoDao.getByUsuario(usuarioId) else turnoDao.getAll()).collectAsState(initial = emptyList())
+    val horasExtra by (if (usuarioId != 0L) horaExtraDao.getByUsuario(usuarioId) else kotlinx.coroutines.flow.flowOf(emptyList())).collectAsState(initial = emptyList())
+    val horasExtraFechas = remember(horasExtra) { horasExtra.map { it.fecha }.toSet() }
 
     Column {
         CalendarioContenido(
@@ -139,7 +144,8 @@ fun CalendarioView(codigoOperario: String = "OP-014") {
             onMesVisible = { vm.setMonth(it) },
             onSeleccionar = { vm.selectDate(it) },
             onLimpiar = { vm.clearSelection() },
-            turnos = turnos.map { it.dia }.toSet()
+            turnos = turnos.map { it.dia }.toSet(),
+            horasExtra = horasExtraFechas
         )
         if (turnos.isNotEmpty()) {
             Text("Turnos asignados:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(8.dp))
@@ -166,6 +172,7 @@ fun CalendarioContenido(
     onSeleccionar: (LocalDate) -> Unit,
     onLimpiar: () -> Unit,
     turnos: Set<LocalDate> = emptySet(),
+    horasExtra: Set<LocalDate> = emptySet(),
     modifier: Modifier = Modifier,
     hoy: LocalDate = LocalDate.now()
 ) {
@@ -203,7 +210,7 @@ fun CalendarioContenido(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DegradadoFondo)
+            .background(MaterialTheme.degradadoFondo)
             .navigationBarsPadding()
     ) {
         // Encabezado (respeta la barra de estado)
@@ -317,6 +324,7 @@ fun CalendarioContenido(
                             registro = dias[day.date],
                             seleccionado = seleccionado?.fecha == day.date,
                             tieneTurno = turnos.contains(day.date),
+                            tieneHoraExtra = horasExtra.contains(day.date),
                             onClick = {
                                 if (seleccionado?.fecha == day.date) onLimpiar()
                                 else onSeleccionar(day.date)
@@ -402,6 +410,7 @@ private fun DiaCalendario(
     registro: DiaAsistenciaUi?,
     seleccionado: Boolean,
     tieneTurno: Boolean = false,
+    tieneHoraExtra: Boolean = false,
     onClick: () -> Unit
 ) {
     // Días que no pertenecen al mes: celda vacía para mantener la grilla
@@ -442,7 +451,7 @@ private fun DiaCalendario(
             .clip(forma)
             .background(relleno)
             .then(
-                if (esProximo && !esHoy) Modifier.bordeDiscontinuo(cs.onSurfaceVariant) else Modifier
+                if (tieneTurno && !dia.date.isBefore(hoy) && !esHoy) Modifier.bordeDiscontinuo(cs.onSurfaceVariant) else Modifier
             )
             // Hoy: aro neón. Seleccionado: aro blanco por encima.
             .then(if (esHoy) Modifier.border(3.dp, cs.primary, forma) else Modifier)
@@ -458,7 +467,7 @@ private fun DiaCalendario(
                 fontWeight = if (registro != null || esHoy || esProximo) FontWeight.ExtraBold
                 else FontWeight.Normal
             )
-            if (tieneTurno) {
+            if (tieneHoraExtra) {
                 Spacer(Modifier.height(2.dp))
                 Box(Modifier.size(4.dp).clip(RoundedCornerShape(2.dp)).background(cs.primary))
             }

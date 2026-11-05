@@ -11,10 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.js.smartvolt.asiste.ui.theme.DegradadoAccion
+import com.js.smartvolt.asiste.ui.theme.FondoArriba
 import com.js.smartvolt.asiste.ui.theme.Medidas
 
 @Composable
@@ -24,13 +25,6 @@ fun GradientButton(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val gradiente = Brush.horizontalGradient(
-        listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.secondary
-        )
-    )
-
     Button(
         onClick = onClick,
         enabled = enabled,
@@ -38,14 +32,14 @@ fun GradientButton(
         contentPadding = PaddingValues(horizontal = 20.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
+            contentColor = FondoArriba,
             disabledContainerColor = Color.Transparent,
-            disabledContentColor = MaterialTheme.colorScheme.onPrimary
+            disabledContentColor = FondoArriba
         ),
         modifier = modifier
             .height(Medidas.AlturaBoton)
             .alpha(if (enabled) 1f else 0.5f)
-            .background(gradiente, MaterialTheme.shapes.large)
+            .background(DegradadoAccion, MaterialTheme.shapes.large)
     ) {
         Text(
             text = text,
