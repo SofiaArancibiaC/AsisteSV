@@ -35,6 +35,7 @@ import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
 import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
 import com.js.smartvolt.asiste.ui.theme.DegradadoMarca
 import com.js.smartvolt.asiste.ui.theme.LocalEstadoColors
+import com.js.smartvolt.asiste.ui.theme.degradadoFondo
 
 /** Una fila de la validación de presencia (GPS, baliza BLE, ubicación simulada). */
 data class CheckPresencia(
@@ -166,7 +167,7 @@ fun MarcaResultadoScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DegradadoFondo)
+            .background(MaterialTheme.degradadoFondo)
             .navigationBarsPadding()
     ) {
         // Encabezado (respeta la barra de estado)

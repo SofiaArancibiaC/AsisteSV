@@ -11,14 +11,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 // ---------------------------------------------------------------
-// Paleta de diseño
+// Paleta oscura (original)
 // ---------------------------------------------------------------
 val FondoArriba = Color(0xFF0A0F1C)
 val FondoAbajo = Color(0xFF16120F)
-val Amarillo = Color(0xFFE6FF0A)
+val Amarillo = Color(0xFFFFAA00)
 
-val AmarilloSuave = Color(0xFFFFE70A)
-val Naranja = Color(0xFFFF6A2B)
+val AmarilloSuave = Color(0xFFFFBE3C)
+val Naranja = Color(0xFFFF6D00)
 val CampoFondo = Color(0xFF111A2E)
 val CampoBorde = Color(0xFF26324D)
 val TextoClaro = Color(0xFFE5E7EB)
@@ -29,10 +29,39 @@ val Rojo = Color(0xFFFF4D5E)
 val Gris = Color(0xFFA8A8A8)
 
 // ---------------------------------------------------------------
+// Paleta clara
+// ---------------------------------------------------------------
+val FondoClaroArriba = Color(0xFFF4F6FA)
+val FondoClaroAbajo = Color(0xFFE9EDF5)
+val SuperficieClara = Color(0xFFFFFFFF)
+val SuperficieClaraVariante = Color(0xFFE9EDF5)
+val BordeClaro = Color(0xFFD3D9E5)
+val TextoOscuro = Color(0xFF0A0F1C)
+val TextoOscuroGris = Color(0xFF5B6478)
+
+val NaranjaClaro = Color(0xFFE0510F)
+val VerdeClaro = Color(0xFF0F9D75)
+val AmbarClaro = Color(0xFFB38600)
+val RojoClaro = Color(0xFFD32F2F)
+val GrisClaro = Color(0xFF6B7280)
+
+// ---------------------------------------------------------------
 // Degradados
 // ---------------------------------------------------------------
 val DegradadoFondo: Brush = Brush.verticalGradient(listOf(FondoArriba, FondoAbajo))
+val DegradadoFondoClaro: Brush = Brush.verticalGradient(listOf(FondoClaroArriba, FondoClaroAbajo))
 val DegradadoMarca: Brush = Brush.horizontalGradient(listOf(Amarillo, Amarillo))
+
+/** Degradado de acción (botón principal). Igual en ambos temas. */
+val DegradadoAccion: Brush = Brush.horizontalGradient(listOf(Amarillo, Naranja))
+
+val LocalDegradadoFondo = staticCompositionLocalOf { DegradadoFondo }
+
+/** Fondo de pantalla según el tema: MaterialTheme.degradadoFondo */
+val MaterialTheme.degradadoFondo: Brush
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalDegradadoFondo.current
 
 // ---------------------------------------------------------------
 // Colores de estado de asistencia (calendario, historial, marcas)
@@ -51,6 +80,7 @@ data class EstadoColors(
     val onEstado: Color get() = sobreEstado
 }
 
+/** Estados para tema oscuro (original). */
 val EstadoColorsFaena = EstadoColors(
     cumplida = Verde,
     atrasada = AmarilloSuave,
@@ -58,6 +88,16 @@ val EstadoColorsFaena = EstadoColors(
     enRevision = Gris,
     rechazada = Rojo,
     sobreEstado = FondoArriba
+)
+
+/** Estados para tema claro: más oscuros para tener contraste sobre blanco. */
+val EstadoColorsClaro = EstadoColors(
+    cumplida = VerdeClaro,
+    atrasada = AmbarClaro,
+    falta = NaranjaClaro,
+    enRevision = GrisClaro,
+    rechazada = RojoClaro,
+    sobreEstado = Color.White
 )
 
 val LocalEstadoColors = staticCompositionLocalOf { EstadoColorsFaena }

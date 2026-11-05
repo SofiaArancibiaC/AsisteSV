@@ -33,9 +33,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
-import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
 import com.js.smartvolt.asiste.ui.theme.DegradadoMarca
+import com.js.smartvolt.asiste.ui.theme.FondoArriba
 import com.js.smartvolt.asiste.ui.theme.LocalEstadoColors
+import com.js.smartvolt.asiste.ui.theme.degradadoFondo
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -73,7 +74,7 @@ fun InicioView(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(DegradadoFondo)
+            .background(MaterialTheme.degradadoFondo)
             .navigationBarsPadding()
     ) {
         // ---------- Cabecera ----------
@@ -86,7 +87,7 @@ fun InicioView(
             Text(
                 text = "ASISTENCIA OBRA",
                 style = MaterialTheme.typography.titleLarge,
-                color = cs.primary
+                color = cs.onBackground
             )
             Text(
                 text = "$codigoOperario · $nombreFaena",
@@ -122,7 +123,7 @@ fun InicioView(
 
             TarjetaValidacion(validacion)
 
-            // Aviso de GPS / permisos (nuevo)
+            // Aviso de GPS / permisos
             if (aviso != null) {
                 Text(
                     text = aviso,
@@ -135,8 +136,8 @@ fun InicioView(
             if (sinConexion) {
                 Etiqueta(
                     texto = "Sin conexión · se guardará en el teléfono",
-                    fondo = cs.outline,
-                    contenido = cs.onSurface
+                    fondo = cs.surfaceVariant,
+                    contenido = cs.onSurfaceVariant
                 )
             }
 
@@ -144,7 +145,11 @@ fun InicioView(
                 onClick = onVerCalendario,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("VER CALENDARIO")
+                Text(
+                    text = "VER CALENDARIO",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = cs.onBackground
+                )
             }
 
             // El mapa ocupa el espacio libre; si no hay mapa, queda el espacio vacío de antes
@@ -161,25 +166,26 @@ fun InicioView(
                 Spacer(Modifier.weight(1f))
             }
 
-            // Botón principal con el degradado de marca
+            // Botón principal: fondo amarillo en ambos temas, así que el texto es navy fijo
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(72.dp)
                     .clip(MaterialTheme.shapes.large)
-                    .background(if (cargando) SolidColor(cs.outline) else DegradadoMarca)
+                    .background(if (cargando) SolidColor(cs.surfaceVariant) else DegradadoMarca)
                     .clickable(enabled = !cargando) { onMarcarEntrada() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = if (cargando) "LEYENDO GPS..." else textoBoton,
                     style = MaterialTheme.typography.titleLarge,
-                    color = cs.onPrimary
+                    color = if (cargando) cs.onSurfaceVariant else FondoArriba
                 )
             }
         }
     }
 }
+
 // ============================================================
 // Componentes privados (solo los usa esta pantalla)
 // ============================================================
@@ -215,8 +221,8 @@ private fun TarjetaTurno(
             )
             Etiqueta(
                 texto = "TURNO PROGRAMADO · $frente",
-                fondo = cs.primary,
-                contenido = cs.onPrimary
+                fondo = cs.primaryContainer,
+                contenido = cs.onPrimaryContainer
             )
         }
     }
@@ -279,7 +285,7 @@ private fun FilaValidacion(etiqueta: String, resultado: String, correcto: Boolea
     }
 }
 
-/** Tarjeta oscura con borde, como los campos del diseño. */
+/** Tarjeta con borde, como los campos del diseño. */
 @Composable
 private fun TarjetaConBorde(contenido: @Composable () -> Unit) {
     val cs = MaterialTheme.colorScheme
@@ -313,13 +319,13 @@ private fun Etiqueta(texto: String, fondo: Color, contenido: Color) {
 }
 
 // ============================================================
-// Preview con datos ficticios
+// Previews con datos ficticios (oscuro y claro)
 // ============================================================
 
 @Preview(showBackground = true, heightDp = 780)
 @Composable
 private fun InicioScreenPreview() {
-    AsisteSVTheme {
+    AsisteSVTheme(darkTheme = true) {
         InicioView(
             codigoOperario = "OP-014",
             nombreFaena = "Faena Ruta 5 Norte",
@@ -331,6 +337,27 @@ private fun InicioScreenPreview() {
                 gpsDentroFaena = true,
                 balizaDetectada = true,
                 rssiDbm = -62,
+            ),
+            sinConexion = true,
+            onMarcarEntrada = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, heightDp = 780)
+@Composable
+private fun InicioScreenClaroPreview() {
+    AsisteSVTheme(darkTheme = false) {
+        InicioView(
+            codigoOperario = "OP-014",
+            nombreFaena = "Faena Ruta 5 Norte",
+            fecha = LocalDate.now(),
+            inicioTurno = LocalTime.of(8, 0),
+            finTurno = LocalTime.of(18, 0),
+            frente = "Frente 2",
+            validacion = ValidacionPresencia(
+                gpsDentroFaena = true,
+                balizaDetectada = false,
             ),
             sinConexion = true,
             onMarcarEntrada = {}

@@ -36,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -63,14 +64,14 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 
 //Paleta de diseño
-private val FondoArriba = Color(0xFF0A0F1C)
-private val FondoAbajo = Color(0xFF16120F)
+private val fondoArriba = Color(0xFF0A0F1C)
+private val fondoAbajo = Color(0xFF16120F)
 private val Amarillo = Color(0xFFE6FF0A)
 private val Naranja = Color(0xFFFF6A2B)
-private val CampoFondo = Color(0xFF111A2E)
-private val CampoBorde = Color(0xFF26324D)
-private val TextoClaro = Color(0xFFE5E7EB)
-private val TextoGris = Color(0xFF8B94A7)
+private val campoFondo = Color(0xFF111A2E)
+private val campoBorde = Color(0xFF26324D)
+private val textoClaro = Color(0xFFE5E7EB)
+private val textoGris = Color(0xFF8B94A7)
 private val Verde = Color(0xFF2DD4A0)
 //
 private val DegradadoMarca = Brush.horizontalGradient(listOf(Amarillo, Amarillo))
@@ -83,6 +84,14 @@ fun LoginView(
     error: String? = null,
     cargando: Boolean = false
 ) {
+    val dark = isSystemInDarkTheme()
+    val fondoArriba = if (dark) Color(0xFF0A0F1C) else Color(0xFFF5F7FA)
+    val fondoAbajo = if (dark) Color(0xFF16120F) else Color(0xFFFFFFFF)
+    val campoFondo = if (dark) Color(0xFF111A2E) else Color(0xFFFFFFFF)
+    val campoBorde = if (dark) Color(0xFF26324D) else Color(0xFFD1D5DB)
+    val textoClaro = if (dark) Color(0xFFE5E7EB) else Color(0xFF1F2937)
+    val textoGris = if (dark) Color(0xFF8B94A7) else Color(0xFF6B7280)
+
     //Estados
     var correo by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
@@ -90,24 +99,24 @@ fun LoginView(
     var recordar by remember { mutableStateOf(true) }
 
     val colorCampos= OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = CampoFondo,
-        unfocusedContainerColor = CampoFondo,
+        focusedContainerColor = campoFondo,
+        unfocusedContainerColor = campoFondo,
         focusedBorderColor = Amarillo,
-        unfocusedBorderColor = CampoBorde,
-        focusedTextColor = TextoClaro,
-        unfocusedTextColor = TextoClaro,
+        unfocusedBorderColor = campoBorde,
+        focusedTextColor = textoClaro,
+        unfocusedTextColor = textoClaro,
         cursorColor = Amarillo,
         focusedLeadingIconColor = Amarillo,
-        unfocusedLeadingIconColor = TextoGris,
+        unfocusedLeadingIconColor = textoGris,
         focusedTrailingIconColor = Amarillo,
-        unfocusedTrailingIconColor = TextoGris,
+        unfocusedTrailingIconColor = textoGris,
         focusedLabelColor = Amarillo,
-        unfocusedLabelColor = TextoGris
+        unfocusedLabelColor = textoGris
     )
 
     Column(
         //Cambio color de fondo
-        modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(FondoArriba, FondoAbajo)))
+        modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(fondoArriba, fondoAbajo)))
             .verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -123,18 +132,18 @@ fun LoginView(
         Spacer(modifier = Modifier.height(16.dp))
         //Titulo VOLT + SERVICIOS
         Row {
-            Text(text = "VOLT", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
+            Text(text = "VOLT", color = textoClaro, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
             Text(text = "SERVICIOS", style = TextStyle(brush = DegradadoMarca, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold))
         }
 
-        Text(text = "INGENIERÍA & SOLUCIONES ELÉCTRICAS", color = TextoGris, fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp, textAlign = TextAlign.Center)
+        Text(text = "INGENIERÍA & SOLUCIONES ELÉCTRICAS", color = textoGris, fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp, textAlign = TextAlign.Center)
 
         Spacer(modifier = Modifier.height(48.dp))
 
         //Correo
         Text(
             text = "Correo Electrónico",
-            color = TextoClaro,
+            color = textoClaro,
             fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.fillMaxWidth()
@@ -145,7 +154,7 @@ fun LoginView(
             value = correo,
             onValueChange = { correo = it },
             singleLine = true,
-            placeholder = {Text("tecnico@serviciosvolt.cl", color = TextoGris)},
+            placeholder = {Text("tecnico@serviciosvolt.cl", color = textoGris)},
             leadingIcon = {Icon(Icons.Default.Email, contentDescription = "Correo")},
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             shape = RoundedCornerShape(14.dp),
@@ -162,7 +171,7 @@ fun LoginView(
         ) {
             Text(
                 text = "Contraseña",
-                color = TextoClaro,
+                color = textoClaro,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -178,7 +187,7 @@ fun LoginView(
             value = pass,
             onValueChange = { pass = it },
             singleLine = true,
-            placeholder = { Text("••••••••", color = TextoGris) },
+            placeholder = { Text("••••••••", color = textoGris) },
             leadingIcon = {
                 Icon(Icons.Default.Lock, contentDescription = "Contraseña")
             },
@@ -214,13 +223,13 @@ fun LoginView(
                     onCheckedChange = { recordar = it },
                     colors = CheckboxDefaults.colors(
                         checkedColor = Naranja,
-                        uncheckedColor = TextoGris,
-                        checkmarkColor = Color.White
+                        uncheckedColor = textoGris,
+                        checkmarkColor = textoClaro
                     )
                 )
                 Text(
                     text = "Recordar usuario",
-                    color = TextoGris,
+                    color = textoGris,
                     fontSize = 13.sp
                 )
             }

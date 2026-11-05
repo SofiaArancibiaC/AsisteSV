@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.js.smartvolt.asiste.model.RecuperarUsuario
 import com.js.smartvolt.asiste.model.admin.Rol
+import com.js.smartvolt.asiste.model.admin.HoraExtra
+import com.js.smartvolt.asiste.model.admin.EstadoHorasExtras
 import com.js.smartvolt.asiste.model.admin.Turno
 import com.js.smartvolt.asiste.model.admin.Usuario
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
@@ -677,16 +679,257 @@ private fun PlaceholderCard(texto: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminHorasExtraView(codigo: String, onBack: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val usuarioDao = DatabaseProvider.getUsuarioDao(context)
+    val horaExtraDao = DatabaseProvider.getHoraExtraDao(context)
+    val operarios by usuarioDao.getByRol(Rol.OPERARIO.name).collectAsState(initial = emptyList())
+
+    var selectedUsuarioId by remember { mutableStateOf(0L) }
+    var selectedUsuarioCodigo by remember { mutableStateOf(codigo) }
+    var fecha by remember { mutableStateOf(java.time.LocalDate.now().toString()) }
+    var horas by remember { mutableStateOf("1.0") }
+    var motivo by remember { mutableStateOf("") }
+    var nota by remember { mutableStateOf("") }
+    var estado by remember { mutableStateOf(EstadoHorasExtras.PENDIENTE) }
+    var expandEstado by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    LaunchedEffect(operarios) {
+        if (selectedUsuarioId == 0L && operarios.isNotEmpty()) {
+            val match = operarios.firstOrNull { it.codigo == codigo } ?: operarios.first()
+            selectedUsuarioId = match.id
+            selectedUsuarioCodigo = match.codigo
+        }
+    }
+
+    val horasExtra by (if (selectedUsuarioId != 0L) horaExtraDao.getByUsuario(selectedUsuarioId) else flowOf(emptyList()))
+        .collectAsState(initial = emptyList())
+
     Column(
         Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = Medidas.PaddingPantalla, vertical = Medidas.EspacioM)
     ) {
-        AdminHeader("HORAS EXTRA", codigo, onBack)
+        AdminHeader("HORAS EXTRA", selectedUsuarioCodigo, onBack)
+
         Spacer(Modifier.height(Medidas.EspacioL))
-        PlaceholderCard("Formulario horas extra (placeholder)")
+
+        Panel {
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = selectedUsuarioCodigo,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Operario") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                    shape = MaterialTheme.shapes.medium,
+                    colors = colorsCampo(),
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    operarios.forEach { u ->
+                        DropdownMenuItem(
+                            text = { Text(u.codigo) },
+                            onClick = {
+                                selectedUsuarioId = u.id
+                                selectedUsuarioCodigo = u.codigo
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(Medidas.EspacioM))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(Medidas.EspacioM)) {
+                Box(Modifier.weight(1f)) {
+                    CampoSelector(
+                        etiqueta = "FECHA",
+                        valor = if (fecha.isBlank()) "Seleccionar fecha" else fecha,
+                        onClick = { showDatePicker = true }
+                    )
+                }
+                Box(Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = horas,
+                        onValueChange = { horas = it },
+                        label = { Text("HORAS") },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium,
+                        colors = colorsCampo(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(Medidas.EspacioM))
+
+            OutlinedTextField(
+                value = motivo,
+                onValueChange = { motivo = it },
+                label = { Text("Motivo") },
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium,
+                colors = colorsCampo(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(Medidas.EspacioM))
+
+            ExposedDropdownMenuBox(expanded = expandEstado, onExpandedChange = { expandEstado = !expandEstado }) {
+                OutlinedTextField(
+                    value = estado.name,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("ESTADO") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandEstado) },
+                    shape = MaterialTheme.shapes.medium,
+                    colors = colorsCampo(),
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(expanded = expandEstado, onDismissRequest = { expandEstado = false }) {
+                    EstadoHorasExtras.values().forEach { e ->
+                        DropdownMenuItem(
+                            text = { Text(e.name) },
+                            onClick = { estado = e; expandEstado = false }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(Medidas.EspacioM))
+
+            OutlinedTextField(
+                value = nota,
+                onValueChange = { nota = it },
+                label = { Text("Nota") },
+                shape = MaterialTheme.shapes.medium,
+                colors = colorsCampo(),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(Modifier.height(Medidas.EspacioL))
+
+        BotonPrincipal("GUARDAR HORA EXTRA", enabled = selectedUsuarioId != 0L && horas.toDoubleOrNull() != null) {
+            if (selectedUsuarioId != 0L) {
+                runBlocking {
+                    horaExtraDao.upsert(
+                        HoraExtra(
+                            usuarioId = selectedUsuarioId,
+                            fecha = java.time.LocalDate.parse(fecha),
+                            horas = horas.toDoubleOrNull() ?: 0.0,
+                            motivo = motivo,
+                            estado = estado,
+                            nota = nota
+                        )
+                    )
+                }
+                motivo = ""
+                nota = ""
+            }
+        }
+
+        Spacer(Modifier.height(Medidas.EspacioL))
+
+        Text(
+            text = "HORAS EXTRA REGISTRADAS",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(Medidas.EspacioS))
+
+        if (horasExtra.isEmpty()) {
+            Text(
+                text = "Este operario aún no tiene horas extra",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth().padding(vertical = Medidas.EspacioM),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            horasExtra.sortedByDescending { it.fecha }.forEach { h ->
+                val colorEstado = when (h.estado) {
+                    EstadoHorasExtras.APROBADO -> MaterialTheme.estados.cumplida
+                    EstadoHorasExtras.RECHAZADO -> MaterialTheme.estados.rechazada
+                    else -> MaterialTheme.estados.enRevision
+                }
+                Panel(Modifier.padding(bottom = 10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                text = "${h.fecha} · ${h.horas} h",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = h.motivo.ifBlank { "Sin motivo" },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (h.nota.isNotBlank()) {
+                                Text(
+                                    text = h.nota,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        if (h.estado == EstadoHorasExtras.PENDIENTE) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                TextButton(onClick = {
+                                    scope.launch {
+                                        horaExtraDao.upsert(h.copy(estado = EstadoHorasExtras.APROBADO))
+                                    }
+                                }) { Text("Aprobar") }
+                                TextButton(onClick = {
+                                    scope.launch {
+                                        horaExtraDao.upsert(h.copy(estado = EstadoHorasExtras.RECHAZADO))
+                                    }
+                                }) { Text("Rechazar") }
+                            }
+                        } else {
+                            BadgeEstado(h.estado.name, colorEstado)
+                        }
+                        IconButton(onClick = { scope.launch { horaExtraDao.delete(h) } }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Eliminar hora extra",
+                                tint = MaterialTheme.estados.rechazada
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        fecha = java.time.Instant.ofEpochMilli(it)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                            .toString()
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+            }
+        ) { DatePicker(state = datePickerState) }
     }
 }
 
