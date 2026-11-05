@@ -56,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.js.smartvolt.asiste.model.Asistencia
 import com.js.smartvolt.asiste.model.EstadoAsistencia
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
+import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
 import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
 import com.js.smartvolt.asiste.ui.theme.DegradadoMarca
@@ -107,9 +108,12 @@ private fun EstadoColors.de(estado: EstadoAsistencia): Color = when (estado) {
 @Composable
 fun CalendarioView(codigoOperario: String = "OP-014") {
     val context = LocalContext.current
-    val dao = remember { DatabaseProvider.getDao(context) }
-    val vm: AsistenciaViewModel = viewModel(factory = AsistenciaViewModelFactory(dao))
 
+    val dao = remember { DatabaseProvider.getDao(context) }
+    val ubicacion = remember { UbicacionProvider(context) }
+    val vm: AsistenciaViewModel = viewModel(
+        factory = AsistenciaViewModelFactory(dao, ubicacion)
+    )
     val attendances by vm.attendances.collectAsState()
     val selected by vm.selected.collectAsState()
 

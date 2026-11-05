@@ -9,11 +9,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.js.smartvolt.asiste.model.admin.Faena
+import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
+import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
+import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModel
+import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModelFactory
 import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
 fun MainView(codigoOperario: String = "OP-014") {
+    val context = LocalContext.current
+    val dao = remember { DatabaseProvider.getAsistenciaDao(context) }
+    val ubicacion = remember { UbicacionProvider(context) }
+
+    val vm: AsistenciaViewModel = viewModel(
+        factory = AsistenciaViewModelFactory(dao, ubicacion)
+    )
+
+    // Demo. Cambia latitud/longitud por las de tu faena real.
+    val faena = remember {
+        Faena(
+            id = 1,
+            nombre = "Faena Ruta 5 Norte",
+            presentes = 42,
+            total = 48,
+            latitud = -33.4489,
+            longitud = -70.6693,
+            radioMetros = 100.0
+        )
+    }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val asistenciaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAsistenciaDao(context)
@@ -36,6 +63,8 @@ fun MainView(codigoOperario: String = "OP-014") {
             }
         }
     }
+
+
 
     if (resultadoMarca != null) {
         MarcaResultadoScreen(
@@ -70,15 +99,17 @@ fun MainView(codigoOperario: String = "OP-014") {
         }
     ) { padding ->
         when (selectedTab) {
-            0 -> InicioView(
+            0 -> InicioRoute(
+                viewModel = vm,
+                faena = faena,
                 codigoOperario = "OP-014",
-                nombreFaena = "Faena Ruta 5 Norte",
                 fecha = LocalDate.now(),
                 inicioTurno = inicioTurno,
                 finTurno = finTurno,
                 frente = "Frente 2",
-                validacion = ValidacionPresencia(true, true, -62),
                 sinConexion = false,
+                onResultado = { resultadoMarca = it },
+                onVerCalendario = { selectedTab = 1 },
                 onMarcarEntrada = {
                     scope.launch {
                         val ahora = java.time.LocalTime.now() //editar para probar distintas marcas

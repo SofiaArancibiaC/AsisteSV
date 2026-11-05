@@ -20,8 +20,7 @@ object DatabaseProvider {
         return db!!
     }
 
-    fun getAsistenciaDao(context: Context): AsistenciaDAO =
-        database(context).asistenciaDao()
+    fun getAsistenciaDao(context: Context): AsistenciaDAO = database(context).asistenciaDao()
 
     fun getUsuarioDao(context: Context): UsuarioDAO =
         database(context).usuarioDao()

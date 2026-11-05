@@ -7,6 +7,9 @@ import androidx.room.PrimaryKey
 data class Faena(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val nombre: String,
-    val presentes: Int,
-    val total: Int
-    )
+    val presentes: Int = 0,
+    val total: Int = 0,
+    val latitud: Double = 0.0,
+    val longitud: Double = 0.0,
+    val radioMetros: Double = 100.0
+)

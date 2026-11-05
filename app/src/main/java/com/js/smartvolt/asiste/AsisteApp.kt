@@ -1,6 +1,7 @@
 package com.js.smartvolt.asiste
 
 import android.app.Application
+import android.content.Context
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
 import com.js.smartvolt.asiste.model.data.local.sha256
 import com.js.smartvolt.asiste.model.RecuperarUsuario
@@ -9,12 +10,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
+import org.osmdroid.config.Configuration
 
 class AsisteApp : Application() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
+
+        // osmdroid: se inicializa UNA sola vez, antes de dibujar el mapa
+        Configuration.getInstance().load(
+            this,
+            getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
+        )
+        Configuration.getInstance().userAgentValue =
+            "$packageName (AsisteSV; contacto@serviciosvolt.cl)"
+
+        // Seed de usuarios demo (igual que antes)
         scope.launch {
             val dao = DatabaseProvider.getUsuarioDao(this@AsisteApp)
             try {

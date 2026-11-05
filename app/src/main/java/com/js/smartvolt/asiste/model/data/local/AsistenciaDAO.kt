@@ -13,6 +13,9 @@ interface AsistenciaDAO {
     @Query("SELECT * FROM asistencia WHERE fecha BETWEEN :start AND :end")
     fun getByRange(start: LocalDate, end: LocalDate): Flow<List<Asistencia>>
 
+    @Query("SELECT * FROM asistencia WHERE fecha = :fecha ORDER BY id ASC")
+    suspend fun getByFecha(fecha: LocalDate): List<Asistencia>
+
     @Query("SELECT * FROM asistencia WHERE usuarioId = :usuarioId")
     fun getByUsuario(usuarioId: Long): Flow<List<Asistencia>>
 
