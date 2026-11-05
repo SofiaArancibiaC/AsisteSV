@@ -20,12 +20,10 @@ object DatabaseProvider {
         return db!!
     }
 
-    fun getAsistenciaDao(context: Context): AsistenciaDAO =
-        database(context).asistenciaDao()
+    fun getAsistenciaDao(context: Context): AsistenciaDAO = database(context).asistenciaDao()
+    fun getUsuarioDao(context: Context): UsuarioDAO = database(context).usuarioDao()
+    fun getFaenaDao(context: Context): FaenaDao = database(context).faenaDao()
 
-    fun getUsuarioDao(context: Context): UsuarioDAO =
-        database(context).usuarioDao()
-
-    // Compatibilidad: por defecto devuelve el DAO de asistencia
+    // Compatibilidad
     fun getDao(context: Context): AsistenciaDAO = getAsistenciaDao(context)
 }

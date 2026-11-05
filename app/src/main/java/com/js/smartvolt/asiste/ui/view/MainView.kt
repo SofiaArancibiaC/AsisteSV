@@ -6,13 +6,41 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.js.smartvolt.asiste.model.admin.Faena
+import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
+import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
+import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModel
+import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModelFactory
 import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
 fun MainView() {
+    val context = LocalContext.current
+    val dao = remember { DatabaseProvider.getAsistenciaDao(context) }
+    val ubicacion = remember { UbicacionProvider(context) }
+
+    val vm: AsistenciaViewModel = viewModel(
+        factory = AsistenciaViewModelFactory(dao, ubicacion)
+    )
+
     var selectedTab by remember { mutableStateOf(0) }
     var resultadoMarca by remember { mutableStateOf<ResultadoMarca?>(null) }
+
+    // Demo. Cambia latitud/longitud por las de tu faena real.
+    val faena = remember {
+        Faena(
+            id = 1,
+            nombre = "Faena Ruta 5 Norte",
+            presentes = 42,
+            total = 48,
+            latitud = -33.4489,
+            longitud = -70.6693,
+            radioMetros = 100.0
+        )
+    }
 
     if (resultadoMarca != null) {
         MarcaResultadoScreen(
@@ -47,16 +75,17 @@ fun MainView() {
         }
     ) { padding ->
         when (selectedTab) {
-            0 -> InicioView(
+            0 -> InicioRoute(
+                viewModel = vm,
+                faena = faena,
                 codigoOperario = "OP-014",
-                nombreFaena = "Faena Ruta 5 Norte",
                 fecha = LocalDate.now(),
                 inicioTurno = LocalTime.of(8, 0),
                 finTurno = LocalTime.of(18, 0),
                 frente = "Frente 2",
-                validacion = ValidacionPresencia(true, true, -62),
                 sinConexion = false,
-                onMarcarEntrada = { resultadoMarca = ResultadoMarca.aprobada("07:56", -62) },
+                onResultado = { resultadoMarca = it },
+                onVerCalendario = { selectedTab = 1 },
                 modifier = Modifier.padding(padding)
             )
             1 -> CalendarioView()

@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
@@ -61,6 +62,10 @@ fun InicioView(
     sinConexion: Boolean,
     onMarcarEntrada: () -> Unit,
     onVerCalendario: () -> Unit = {},
+    textoBoton: String = "MARCAR ENTRADA",
+    aviso: String? = null,
+    cargando: Boolean = false,
+    mapa: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val cs = MaterialTheme.colorScheme
@@ -117,6 +122,16 @@ fun InicioView(
 
             TarjetaValidacion(validacion)
 
+            // Aviso de GPS / permisos (nuevo)
+            if (aviso != null) {
+                Text(
+                    text = aviso,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = cs.error,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             if (sinConexion) {
                 Etiqueta(
                     texto = "Sin conexión · se guardará en el teléfono",
@@ -132,7 +147,19 @@ fun InicioView(
                 Text("VER CALENDARIO")
             }
 
-            Spacer(Modifier.weight(1f))
+            // El mapa ocupa el espacio libre; si no hay mapa, queda el espacio vacío de antes
+            if (mapa != null) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.large)
+                ) {
+                    mapa()
+                }
+            } else {
+                Spacer(Modifier.weight(1f))
+            }
 
             // Botón principal con el degradado de marca
             Box(
@@ -140,12 +167,12 @@ fun InicioView(
                     .fillMaxWidth()
                     .height(72.dp)
                     .clip(MaterialTheme.shapes.large)
-                    .background(DegradadoMarca)
-                    .clickable { onMarcarEntrada() },
+                    .background(if (cargando) SolidColor(cs.outline) else DegradadoMarca)
+                    .clickable(enabled = !cargando) { onMarcarEntrada() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "MARCAR ENTRADA",
+                    text = if (cargando) "LEYENDO GPS..." else textoBoton,
                     style = MaterialTheme.typography.titleLarge,
                     color = cs.onPrimary
                 )
@@ -153,7 +180,6 @@ fun InicioView(
         }
     }
 }
-
 // ============================================================
 // Componentes privados (solo los usa esta pantalla)
 // ============================================================
