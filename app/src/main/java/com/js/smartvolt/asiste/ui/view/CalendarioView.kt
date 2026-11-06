@@ -104,7 +104,6 @@ private fun EstadoColors.de(estado: EstadoAsistencia): Color = when (estado) {
     EstadoAsistencia.RECHAZADA -> rechazada
 }
 
-// ============================================================
 @Composable
 fun CalendarioView(codigoOperario: String = "OP-014") {
     val context = LocalContext.current
@@ -189,9 +188,7 @@ fun CalendarioView(codigoOperario: String = "OP-014") {
     }
 }
 
-// ============================================================
 // Contenido
-// ============================================================
 @Composable
 fun CalendarioContenido(
     dias: Map<LocalDate, DiaAsistenciaUi>,
@@ -464,7 +461,6 @@ private fun DiaCalendario(
             dia.date.dayOfWeek == DayOfWeek.SUNDAY
 
     // Turno próximo: día hábil futuro (o de hoy) sin marca registrada.
-    // Si tu app ya conoce los turnos programados, reemplaza esta condición.
     val esProximo = registro == null && !esFinDeSemana && !dia.date.isBefore(hoy)
 
     val relleno = when {
@@ -489,7 +485,6 @@ private fun DiaCalendario(
             .then(
                 if (tieneTurno && !dia.date.isBefore(hoy) && !esHoy) Modifier.bordeDiscontinuo(cs.onSurfaceVariant) else Modifier
             )
-            // Hoy: aro neón. Seleccionado: aro blanco por encima.
             .then(if (esHoy) Modifier.border(3.dp, cs.primary, forma) else Modifier)
             .then(if (seleccionado) Modifier.border(3.dp, cs.onSurface, forma) else Modifier)
             .clickable(enabled = registro != null || tieneTurno) { onClick() },
@@ -510,8 +505,7 @@ private fun DiaCalendario(
         }
     }
 }
-
-/** Borde punteado para los turnos próximos. */
+//turnos proximos
 private fun Modifier.bordeDiscontinuo(
     color: Color,
     radio: Dp = 10.dp
