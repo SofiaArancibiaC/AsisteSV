@@ -31,6 +31,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
 import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
 import com.js.smartvolt.asiste.ui.theme.DegradadoMarca
@@ -215,29 +230,14 @@ fun MarcaResultadoScreen(
             ) {
                 Spacer(Modifier.height(8.dp))
 
-                // Círculo con ✓ o ✕ (halo suave + círculo sólido)
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(colorPrincipal.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(92.dp)
-                            .clip(CircleShape)
-                            .background(colorPrincipal),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (resultado.aprobada) "✓" else "✕",
-                            color = estados.sobreEstado,
-                            fontSize = 50.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-                }
+                // Círculo animado con ✓ o ✕ dibujado trazo a trazo
+                IconoResultadoAnimado(
+                    aprobada = resultado.aprobada,
+                    color = colorPrincipal,
+                    colorSimbolo = estados.sobreEstado,
+                    clave= resultado.subtitulo,
+                    modifier = Modifier.size(120.dp)
+                )
 
                 Spacer(Modifier.height(14.dp))
 
@@ -376,5 +376,150 @@ private fun PreviewAprobada() {
             resultado = ResultadoMarca.aprobada(hora = "07:56", rssi = -62),
             onAccion = {}
         )
+    }
+}
+@Composable
+private fun IconoResultadoAnimado(
+    aprobada: Boolean,
+    color: Color,
+    colorSimbolo: Color,
+    clave: Any? = null,
+    modifier: Modifier = Modifier
+) {
+    // Círculo principal
+    val escala = remember { Animatable(0f) }
+    val alfaCirculo = remember { Animatable(0f) }
+
+    // Halo que se expande y desaparece
+    val escalaHalo = remember { Animatable(0.6f) }
+    val alfaHalo = remember { Animatable(0f) }
+
+    // Progreso del trazo del símbolo (0 = nada, 1 = completo)
+    val progreso = remember { Animatable(0f) }
+
+    LaunchedEffect(aprobada, clave) {
+        // Reinicio por si el resultado cambia
+        escala.snapTo(0f)
+        alfaCirculo.snapTo(0f)
+        escalaHalo.snapTo(0.6f)
+        alfaHalo.snapTo(0f)
+        progreso.snapTo(0f)
+
+        // 1) El círculo aparece con rebote
+        launch {
+            alfaCirculo.animateTo(1f, tween(durationMillis = 160))
+            escala.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = 0.45f,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            )
+        }
+
+        // 2) El halo se expande y se desvanece
+        launch {
+            alfaHalo.animateTo(0.45f, tween(durationMillis = 140))
+            escalaHalo.animateTo(
+                targetValue = 1.18f,
+                animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+            )
+            alfaHalo.animateTo(0f, tween(durationMillis = 320))
+        }
+
+        // 3) El trazo arranca cuando el círculo ya se ve
+        delay(180)
+        progreso.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 480, easing = FastOutSlowInEasing)
+        )
+    }
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+
+        // Halo
+        Box(
+            Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = escalaHalo.value
+                    scaleY = escalaHalo.value
+                    alpha = alfaHalo.value
+                }
+                .clip(CircleShape)
+                .background(color)
+        )
+
+        // Círculo sólido (92 de 120 = 0.7667)
+        Box(
+            Modifier
+                .fillMaxSize(0.7667f)
+                .graphicsLayer {
+                    scaleX = escala.value
+                    scaleY = escala.value
+                    alpha = alfaCirculo.value
+                }
+                .clip(CircleShape)
+                .background(color)
+        )
+
+        // Símbolo dibujado
+        Canvas(
+            Modifier
+                .fillMaxSize(0.5f)
+                .graphicsLayer { alpha = alfaCirculo.value }
+        ) {
+            dibujarSimbolo(
+                aprobada = aprobada,
+                progreso = progreso.value,
+                color = colorSimbolo,
+                grosor = size.width * 0.13f
+            )
+        }
+    }
+}
+
+/** Dibuja un ✓ o un ✕ de forma progresiva. */
+private fun DrawScope.dibujarSimbolo(
+    aprobada: Boolean,
+    progreso: Float,
+    color: Color,
+    grosor: Float
+) {
+    val w = size.width
+    val h = size.height
+
+    // Dibuja el tramo [inicio, fin] del progreso total
+    fun tramo(desde: Offset, hasta: Offset, inicio: Float, fin: Float) {
+        if (progreso <= inicio) return
+        val t = ((progreso - inicio) / (fin - inicio)).coerceIn(0f, 1f)
+        val finParcial = Offset(
+            desde.x + (hasta.x - desde.x) * t,
+            desde.y + (hasta.y - desde.y) * t
+        )
+        drawLine(
+            color = color,
+            start = desde,
+            end = finParcial,
+            strokeWidth = grosor,
+            cap = StrokeCap.Round
+        )
+    }
+
+    if (aprobada) {
+        // ✓ : primero la bajada corta, luego la subida larga
+        val p1 = Offset(w * 0.12f, h * 0.54f)
+        val p2 = Offset(w * 0.40f, h * 0.82f)
+        val p3 = Offset(w * 0.90f, h * 0.18f)
+        tramo(p1, p2, 0f, 0.45f)
+        tramo(p2, p3, 0.45f, 1f)
+    } else {
+        // ✕ : primero la diagonal \
+        val a = Offset(w * 0.16f, h * 0.16f)
+        val b = Offset(w * 0.84f, h * 0.84f)
+        val c = Offset(w * 0.84f, h * 0.16f)
+        val d = Offset(w * 0.16f, h * 0.84f)
+        tramo(a, b, 0f, 0.5f)
+        tramo(c, d, 0.5f, 1f)
     }
 }
