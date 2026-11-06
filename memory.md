@@ -79,3 +79,9 @@ App Android (Kotlin + Jetpack Compose) de asistencia/turnos. Package `com.js.sma
 - Leyenda de CalendarioView ahora incluye "Rechazada" (color estados.rechazada).
 - LoginView y OlvideContrasenaView ahora adaptan su paleta al tema del sistema (isSystemInDarkTheme): colores claros en modo claro y oscuros en modo oscuro.
 - Corregido amarillo neón en tema claro: LoginView/OlvideContrasenaView usan ámbar oscuro (0xFFB38600) en claro en lugar de 0xFFE6FF0A; Theme.kt ColoresClaros usa AmbarClaro para primaryContainer y blanco para onPrimary.
+- Corregido LoginView: ya no usa variables locales dark/color; usa MaterialTheme.colorScheme para colores adaptativos. colorCampos() sigue en Color.kt. Logo Image (R.drawable.logo) 180.dp con subtítulo acercado (offset -30.dp).
+- LoginView ahora usa imePadding() para que el contenido se desplace cuando aparece el teclado, evitando que tape los campos.
+- CalendarioView: celda "hoy" ahora usa ColorHoy (AmbarClaro) definido en Color.kt en ambos temas, en lugar de cs.primary.
+- CalendarioView: toast de depuración eliminado; días con turno ya no tienen fondo debug; listado de turnos asignados ahora usa estilo de tarjeta (surface + borde + colores del tema). Detalle del día seleccionado visible con scroll externo.
+- OlvideContrasenaView ahora adapta paleta al tema (isSystemInDarkTheme) mediante variables locales que sombrean constantes de tema.
+- colorCampos() es función @Composable en Color.kt (adaptativa dark/light); OutlinedTextField usa colorCampos().

@@ -42,17 +42,29 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.js.smartvolt.asiste.ui.theme.Amarillo
+import com.js.smartvolt.asiste.ui.theme.CampoBorde
+import com.js.smartvolt.asiste.ui.theme.FondoAbajo
+import com.js.smartvolt.asiste.ui.theme.FondoArriba
+import com.js.smartvolt.asiste.ui.theme.FondoClaroArriba
+import com.js.smartvolt.asiste.ui.theme.FondoClaroAbajo
+import com.js.smartvolt.asiste.ui.theme.CampoFondo
+import com.js.smartvolt.asiste.ui.theme.SuperficieClara
+import com.js.smartvolt.asiste.ui.theme.CampoBorde
+import com.js.smartvolt.asiste.ui.theme.BordeClaro
+import com.js.smartvolt.asiste.ui.theme.TextoClaro
+import com.js.smartvolt.asiste.ui.theme.TextoOscuro
+import com.js.smartvolt.asiste.ui.theme.TextoGris
+import com.js.smartvolt.asiste.ui.theme.TextoOscuroGris
+import com.js.smartvolt.asiste.ui.theme.AmbarClaro
+import com.js.smartvolt.asiste.ui.theme.NaranjaClaro
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.js.smartvolt.asiste.ui.theme.Naranja
+import com.js.smartvolt.asiste.ui.theme.TextoClaro
+import com.js.smartvolt.asiste.ui.theme.TextoGris
+import com.js.smartvolt.asiste.ui.theme.Verde
+import com.js.smartvolt.asiste.ui.theme.colorCampos
 
-// Paleta de diseño (misma del login)
-private val fondoArriba = Color(0xFF0A0F1C)
-private val fondoAbajo = Color(0xFF16120F)
-private val Amarillo = Color(0xFFE6FF0A)
-private val Naranja = Color(0xFFFF6A2B)
-private val campoFondo = Color(0xFF111A2E)
-private val campoBorde = Color(0xFF26324D)
-private val textoClaro = Color(0xFFE5E7EB)
-private val textoGris = Color(0xFF8B94A7)
-private val Verde = Color(0xFF2DD4A0)
 
 @Composable
 fun OlvideContrasenaView(
@@ -60,34 +72,23 @@ fun OlvideContrasenaView(
     estado: OlvideEstado = OlvideEstado.Idle,
     onEnviar: (String) -> Unit = {}
 ) {
-    val dark = isSystemInDarkTheme()
-    val fondoArriba = if (dark) Color(0xFF0A0F1C) else Color(0xFFF5F7FA)
-    val fondoAbajo = if (dark) Color(0xFF16120F) else Color(0xFFFFFFFF)
-    val campoFondo = if (dark) Color(0xFF111A2E) else Color(0xFFFFFFFF)
-    val campoBorde = if (dark) Color(0xFF26324D) else Color(0xFFD1D5DB)
-    val textoClaro = if (dark) Color(0xFFE5E7EB) else Color(0xFF1F2937)
-    val textoGris = if (dark) Color(0xFF8B94A7) else Color(0xFF6B7280)
-    // Amarillo neón solo en oscuro; en claro se usa un ámbar más oscuro para legibilidad
-    val Amarillo = if (dark) Color(0xFFE6FF0A) else Color(0xFFB38600)
 
     var correo by remember { mutableStateOf("") }
 
-    val colorCampos = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = campoFondo,
-        unfocusedContainerColor = campoFondo,
-        focusedBorderColor = Amarillo,
-        unfocusedBorderColor = campoBorde,
-        focusedTextColor = textoClaro,
-        unfocusedTextColor = textoClaro,
-        cursorColor = Amarillo,
-        focusedLeadingIconColor = Amarillo,
-        unfocusedLeadingIconColor = textoGris
-    )
+    val dark = isSystemInDarkTheme()
+    val FondoArriba = if (dark) FondoArriba else FondoClaroArriba
+    val FondoAbajo = if (dark) FondoAbajo else FondoClaroAbajo
+    val CampoFondo = if (dark) CampoFondo else SuperficieClara
+    val CampoBorde = if (dark) CampoBorde else BordeClaro
+    val TextoClaro = if (dark) TextoClaro else TextoOscuro
+    val TextoGris = if (dark) TextoGris else TextoOscuroGris
+    val Amarillo = if (dark) Amarillo else AmbarClaro
+    val Naranja = if (dark) Naranja else NaranjaClaro
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(fondoArriba, fondoAbajo)))
+            .background(Brush.verticalGradient(listOf(FondoArriba, FondoAbajo)))
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.Center,
@@ -99,7 +100,7 @@ fun OlvideContrasenaView(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Volver",
-                    tint = textoClaro
+                    tint = TextoClaro
                 )
             }
         }
@@ -108,7 +109,7 @@ fun OlvideContrasenaView(
 
         Text(
             text = "Recuperar contraseña",
-            color = textoClaro,
+            color = TextoClaro,
             fontSize = 24.sp,
             fontWeight = FontWeight.ExtraBold
         )
@@ -117,7 +118,7 @@ fun OlvideContrasenaView(
 
         Text(
             text = "Ingresa tu correo y te enviaremos las instrucciones para restablecer tu clave.",
-            color = textoGris,
+            color = TextoGris,
             fontSize = 13.sp,
             modifier = Modifier.fillMaxWidth()
         )
@@ -126,7 +127,7 @@ fun OlvideContrasenaView(
 
         Text(
             text = "Correo Electrónico",
-            color = textoClaro,
+            color = TextoClaro,
             fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.fillMaxWidth()
@@ -138,11 +139,11 @@ fun OlvideContrasenaView(
             value = correo,
             onValueChange = { correo = it },
             singleLine = true,
-            placeholder = { Text("tecnico@serviciosvolt.cl", color = textoGris) },
+            placeholder = { Text("tecnico@serviciosvolt.cl", color = TextoGris) },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Correo") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             shape = RoundedCornerShape(14.dp),
-            colors = colorCampos,
+            colors = colorCampos(),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -180,8 +181,8 @@ fun OlvideContrasenaView(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Amarillo,
                 contentColor = Color(0xFF111111),
-                disabledContainerColor = campoBorde,
-                disabledContentColor = textoGris
+                disabledContainerColor = CampoBorde,
+                disabledContentColor = TextoGris
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -201,7 +202,7 @@ fun OlvideContrasenaView(
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
-                contentColor = textoGris
+                contentColor = TextoGris
             ),
             modifier = Modifier
                 .fillMaxWidth()

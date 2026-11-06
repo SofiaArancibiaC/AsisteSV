@@ -58,6 +58,8 @@ import com.js.smartvolt.asiste.model.EstadoAsistencia
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
 import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
+import com.js.smartvolt.asiste.ui.theme.ColorHoy
+import com.js.smartvolt.asiste.ui.theme.TextoOscuro
 import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
 import com.js.smartvolt.asiste.ui.theme.DegradadoMarca
 import com.js.smartvolt.asiste.ui.theme.EstadoColors
@@ -80,8 +82,6 @@ import java.util.Locale
 
 private val LOCALE_ES: Locale = Locale.forLanguageTag("es-CL")
 
-
-/** Datos de un día ya formateados para mostrar (así la pantalla se puede previsualizar sin base de datos). */
 data class DiaAsistenciaUi(
     val fecha: LocalDate,
     val estado: EstadoAsistencia,
@@ -104,8 +104,6 @@ private fun EstadoColors.de(estado: EstadoAsistencia): Color = when (estado) {
     EstadoAsistencia.RECHAZADA -> rechazada
 }
 
-// ============================================================
-// Versión con ViewModel (la que usas en la navegación)
 // ============================================================
 @Composable
 fun CalendarioView(codigoOperario: String = "OP-014") {
@@ -137,20 +135,42 @@ fun CalendarioView(codigoOperario: String = "OP-014") {
     val horasExtra by (if (usuarioId != 0L) horaExtraDao.getByUsuario(usuarioId) else kotlinx.coroutines.flow.flowOf(emptyList())).collectAsState(initial = emptyList())
     val horasExtraFechas = remember(horasExtra) { horasExtra.map { it.fecha }.toSet() }
 
-    Column {
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+
+    val cs = MaterialTheme.colorScheme
+
+    Column(Modifier.verticalScroll(rememberScrollState())) {
         CalendarioContenido(
             dias = dias,
             seleccionado = seleccionado,
             onMesVisible = { vm.setMonth(it) },
-            onSeleccionar = { vm.selectDate(it) },
-            onLimpiar = { vm.clearSelection() },
+            onSeleccionar = { selectedDate = it; vm.selectDate(it) },
+            onLimpiar = { selectedDate = null; vm.clearSelection() },
             turnos = turnos.map { it.dia }.toSet(),
             horasExtra = horasExtraFechas
         )
         if (turnos.isNotEmpty()) {
-            Text("Turnos asignados:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(8.dp))
-            turnos.forEach { t ->
-                Text("${t.dia} ${t.horario} ${if (t.activo) "Activo" else "Inactivo"}", modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+            val forma = RoundedCornerShape(14.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(forma)
+                    .background(cs.surface)
+                    .border(1.dp, cs.outline, forma)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text("Turnos asignados", color = cs.primary, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+                turnos.forEach { t ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("${t.dia}  ${t.horario}", color = cs.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Text(if (t.activo) "Activo" else "Inactivo", color = if (t.activo) cs.primary else cs.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    }
+                }
             }
         }
         selected?.let { sel ->
@@ -158,11 +178,19 @@ fun CalendarioView(codigoOperario: String = "OP-014") {
                 Text("Turno del día: ${t.horario} (${if (t.activo) "Activo" else "Inactivo"})", modifier = Modifier.padding(8.dp))
             }
         }
+        selectedDate?.let { d ->
+            val t = turnos.firstOrNull { it.dia == d }
+            if (t != null) {
+                Text("Turno seleccionado: ${t.horario} (${if (t.activo) "Activo" else "Inactivo"})", modifier = Modifier.padding(8.dp))
+            } else {
+                Text("Día seleccionado: $d (sin turno asignado)", modifier = Modifier.padding(8.dp))
+            }
+        }
     }
 }
 
 // ============================================================
-// Contenido sin ViewModel (se puede previsualizar)
+// Contenido
 // ============================================================
 @Composable
 fun CalendarioContenido(
@@ -178,6 +206,7 @@ fun CalendarioContenido(
 ) {
     val cs = MaterialTheme.colorScheme
     val estados = LocalEstadoColors.current
+    val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val mesInicial = remember(hoy) { YearMonth.from(hoy) }
@@ -246,7 +275,6 @@ fun CalendarioContenido(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
@@ -326,6 +354,8 @@ fun CalendarioContenido(
                             tieneTurno = turnos.contains(day.date),
                             tieneHoraExtra = horasExtra.contains(day.date),
                             onClick = {
+                                val t = turnos.firstOrNull { it == day.date }
+
                                 if (seleccionado?.fecha == day.date) onLimpiar()
                                 else onSeleccionar(day.date)
                             }
@@ -426,6 +456,7 @@ private fun DiaCalendario(
 
     val cs = MaterialTheme.colorScheme
     val estados = LocalEstadoColors.current
+    val ctx = LocalContext.current
 
     val forma = RoundedCornerShape(10.dp)
     val esHoy = dia.date == hoy
@@ -438,13 +469,13 @@ private fun DiaCalendario(
 
     val relleno = when {
         registro != null -> estados.de(registro.estado)
-        esHoy -> cs.primary
+        esHoy -> ColorHoy
         esProximo -> cs.outline.copy(alpha = 0.35f)
         else -> Color.Transparent
     }
     val colorTexto = when {
         registro != null -> estados.sobreEstado
-        esHoy -> cs.onPrimary
+        esHoy -> TextoOscuro
         esProximo -> cs.onSurface
         else -> cs.onSurfaceVariant.copy(alpha = 0.45f)
     }
@@ -461,7 +492,7 @@ private fun DiaCalendario(
             // Hoy: aro neón. Seleccionado: aro blanco por encima.
             .then(if (esHoy) Modifier.border(3.dp, cs.primary, forma) else Modifier)
             .then(if (seleccionado) Modifier.border(3.dp, cs.onSurface, forma) else Modifier)
-            .clickable(enabled = registro != null) { onClick() },
+            .clickable(enabled = registro != null || tieneTurno) { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -647,28 +678,3 @@ private fun FilaDetalle(etiqueta: String, valor: @Composable () -> Unit) {
     }
 }
 
-// ============================================================
-// Preview con datos ficticios (no necesita base de datos)
-// ============================================================
-@Preview(showBackground = true, heightDp = 860)
-@Composable
-fun CalendarioPreview() {
-    val hoy = LocalDate.of(2026, 10, 7)
-    val dias = listOf(
-        DiaAsistenciaUi(LocalDate.of(2026, 10, 1), EstadoAsistencia.CUMPLIDA, "08:00", "07:58"),
-        DiaAsistenciaUi(LocalDate.of(2026, 10, 2), EstadoAsistencia.ATRASADA, "08:00", "08:14"),
-        DiaAsistenciaUi(LocalDate.of(2026, 10, 5), EstadoAsistencia.CUMPLIDA, "08:00", "07:59"),
-        DiaAsistenciaUi(LocalDate.of(2026, 10, 6), EstadoAsistencia.FALTA, "08:00", "Sin marca")
-    ).associateBy { it.fecha }
-
-    AsisteSVTheme {
-        CalendarioContenido(
-            dias = dias,
-            seleccionado = dias[LocalDate.of(2026, 10, 2)],
-            onMesVisible = {},
-            onSeleccionar = {},
-            onLimpiar = {},
-            hoy = hoy
-        )
-    }
-}
