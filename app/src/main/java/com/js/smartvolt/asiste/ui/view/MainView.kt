@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.first
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.js.smartvolt.asiste.model.admin.Faena
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
-import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
+import com.js.smartvolt.asiste.data.location.UbicacionProvider
 import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModel
 import com.js.smartvolt.asiste.viewmodel.AsistenciaViewModelFactory
 import java.time.LocalDate

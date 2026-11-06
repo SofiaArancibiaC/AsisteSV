@@ -1,4 +1,4 @@
-package com.js.smartvolt.asiste.model.data.local
+package com.js.smartvolt.asiste.data.location
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -13,6 +13,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.milliseconds
 
 data class LecturaUbicacion(
     val latitud: Double,
@@ -49,7 +50,7 @@ class UbicacionProvider(context: Context) {
         if (!gpsActivo()) return ResultadoUbicacion.GpsApagado
 
         return try {
-            val actual = withTimeoutOrNull(12_000) {
+            val actual = withTimeoutOrNull(12_000.milliseconds) {
                 client.getCurrentLocation(
                     Priority.PRIORITY_HIGH_ACCURACY,
                     CancellationTokenSource().token

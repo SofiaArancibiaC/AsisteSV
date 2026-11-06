@@ -56,7 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.js.smartvolt.asiste.model.Asistencia
 import com.js.smartvolt.asiste.model.EstadoAsistencia
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
-import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
+import com.js.smartvolt.asiste.data.location.UbicacionProvider
 import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
 import com.js.smartvolt.asiste.ui.theme.ColorHoy
 import com.js.smartvolt.asiste.ui.theme.TextoOscuro

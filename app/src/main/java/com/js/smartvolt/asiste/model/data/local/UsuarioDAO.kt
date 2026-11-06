@@ -37,6 +37,9 @@ interface UsuarioDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(usuario: Usuario)
 
+    @Query("UPDATE usuario SET activo = :activo WHERE codigo = :codigo")
+    suspend fun setActivo(codigo: String, activo: Boolean)
+
     @Delete
     suspend fun delete(entity: Usuario)
 

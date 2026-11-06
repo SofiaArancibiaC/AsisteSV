@@ -47,6 +47,17 @@ class AsisteApp : Application() {
                         activo = true
                     ))
                 }
+                if (dao.existeCorreo("capataz@serviciosvolt.cl") == 0) {
+                    dao.insertar(com.js.smartvolt.asiste.model.admin.Usuario(
+                        correo = "capataz@serviciosvolt.cl",
+                        nombre = "Capataz Demo",
+                        passwordHash = sha256("capataz123"),
+                        codigo = "CAP-001",
+                        rol = com.js.smartvolt.asiste.model.admin.Rol.CAPATAZ,
+                        faenaId = 1L,
+                        activo = true
+                    ))
+                }
                 if (dao.existeCorreo("admin@serviciosvolt.cl") == 0) {
                     dao.insertar(com.js.smartvolt.asiste.model.admin.Usuario(
                         correo = "admin@serviciosvolt.cl",

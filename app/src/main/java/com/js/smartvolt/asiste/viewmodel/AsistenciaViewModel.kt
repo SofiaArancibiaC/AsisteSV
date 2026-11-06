@@ -9,8 +9,8 @@ import com.js.smartvolt.asiste.ui.view.ResultadoMarca
 import com.js.smartvolt.asiste.model.EstadoAsistencia
 import com.js.smartvolt.asiste.model.admin.Faena
 import com.js.smartvolt.asiste.model.data.local.AsistenciaDAO
-import com.js.smartvolt.asiste.model.data.local.ResultadoUbicacion
-import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
+import com.js.smartvolt.asiste.data.location.ResultadoUbicacion
+import com.js.smartvolt.asiste.data.location.UbicacionProvider
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

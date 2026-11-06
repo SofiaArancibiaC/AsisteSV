@@ -19,6 +19,7 @@ import com.js.smartvolt.asiste.ui.theme.AsisteSVTheme
 import com.js.smartvolt.asiste.ui.view.LoginView
 import com.js.smartvolt.asiste.ui.view.MainView
 import com.js.smartvolt.asiste.ui.view.admin.AdminMainView
+import com.js.smartvolt.asiste.ui.view.capataz.CapatazMainView
 import com.js.smartvolt.asiste.viewmodel.OlvideClaveViewModel
 import com.js.smartvolt.asiste.viewmodel.OlvideClaveViewModelFactory
 import com.js.smartvolt.asiste.ui.view.OlvideContrasenaView
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import com.js.smartvolt.asiste.viewmodel.LoginEstado
 import com.js.smartvolt.asiste.viewmodel.LoginViewModel
 import com.js.smartvolt.asiste.viewmodel.LoginViewModelFactory
+import com.js.smartvolt.asiste.session.SessionManager
 import com.js.smartvolt.asiste.data.repository.AuthRepository
 
 
@@ -52,7 +54,12 @@ class MainActivity : FragmentActivity() {
                 LaunchedEffect(estado) {
                     if (estado is LoginEstado.Exito) {
                         codigoOperario = (estado as LoginEstado.Exito).codigo
-                        pantalla = if (esAdmin) "admin" else "inicio"
+                        val rol = SessionManager.rol
+                        pantalla = when (rol) {
+                            com.js.smartvolt.asiste.model.admin.Rol.ADMIN -> "admin"
+                            com.js.smartvolt.asiste.model.admin.Rol.CAPATAZ -> "capataz"
+                            else -> "inicio"
+                        }
                     }
                 }
 
@@ -95,6 +102,7 @@ class MainActivity : FragmentActivity() {
 
                     "inicio" -> MainView(codigoOperario = codigoOperario ?: "OP-014", onCerrarSesion = { vm.limpiarEstado(); pantalla = "login" })
                     "admin" -> AdminMainView(onCerrarSesion = { vm.limpiarEstado(); pantalla = "login" })
+                    "capataz" -> CapatazMainView(onCerrarSesion = { vm.limpiarEstado(); pantalla = "login" })
                 }
             }
         }
