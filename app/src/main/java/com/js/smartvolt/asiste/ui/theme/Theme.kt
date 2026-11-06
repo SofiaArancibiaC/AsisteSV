@@ -49,9 +49,9 @@ private val ColoresOscuros = darkColorScheme(
 // Esquema claro: el navy pasa a ser el color principal y el amarillo queda de contenedor
 private val ColoresClaros = lightColorScheme(
     primary = FondoArriba,
-    onPrimary = Amarillo,
-    primaryContainer = Amarillo,
-    onPrimaryContainer = FondoArriba,
+    onPrimary = Color.White,
+    primaryContainer = AmbarClaro,
+    onPrimaryContainer = TextoOscuro,
     secondary = NaranjaClaro,
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFFFE0D1),

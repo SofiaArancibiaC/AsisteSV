@@ -13,6 +13,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
+import com.js.smartvolt.asiste.viewmodel.FaenaViewModel
+import com.js.smartvolt.asiste.viewmodel.FaenaViewModelFactory
+import com.js.smartvolt.asiste.viewmodel.UsuarioViewModelFactory
+import kotlinx.coroutines.launch
 import java.time.Instant
 
 import java.time.LocalDate
@@ -22,15 +29,17 @@ import java.util.Locale
 
 @Composable
 fun AdminPanelView(onOpenAlertas: () -> Unit, onOpenUsuarios: () -> Unit, onOpenReporte: () -> Unit) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val usuarioDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getUsuarioDao(context)
-    val asistenciaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getAsistenciaDao(context)
-    val faenaDao = com.js.smartvolt.asiste.model.data.local.DatabaseProvider.getFaenaDao(context)
-    val faenaVm: com.js.smartvolt.asiste.viewmodel.FaenaViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.js.smartvolt.asiste.viewmodel.FaenaViewModelFactory(faenaDao))
+    val context = LocalContext.current
+    val usuarioDao = DatabaseProvider.getUsuarioDao(context)
+    val asistenciaDao = DatabaseProvider.getAsistenciaDao(context)
+    val faenaDao = DatabaseProvider.getFaenaDao(context)
+    val faenaVm: FaenaViewModel = viewModel(factory = FaenaViewModelFactory(faenaDao))
     val faenas by faenaVm.faenas.collectAsState()
-    val vm: com.js.smartvolt.asiste.viewmodel.UsuarioViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.js.smartvolt.asiste.viewmodel.UsuarioViewModelFactory(usuarioDao))
+    val vm: com.js.smartvolt.asiste.viewmodel.UsuarioViewModel = viewModel(factory = UsuarioViewModelFactory(usuarioDao))
     val usuarios by vm.usuarios.collectAsState()
     val asistencias by asistenciaDao.getAll().collectAsState(initial = emptyList())
+    val usuariosConFaena by usuarioDao.getUsuariosConFaena().collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
 
     var dia by remember { mutableStateOf(LocalDate.now()) }
     var faena by remember { mutableStateOf("Todas las faenas") }
@@ -140,7 +149,32 @@ fun AdminPanelView(onOpenAlertas: () -> Unit, onOpenUsuarios: () -> Unit, onOpen
         }
 
         Spacer(Modifier.height(16.dp))
-        GradientButton(text = "VER REPORTE DE HORAS", onClick = onOpenReporte)
+        CommonButton(text = "SIMULAR MARCAS", onClick = {
+            scope.launch {
+                usuariosConFaena.forEach { uf ->
+                    asistenciaDao.upsert(
+                        com.js.smartvolt.asiste.model.Asistencia(
+                            fecha = dia,
+                            estado = com.js.smartvolt.asiste.model.EstadoAsistencia.CUMPLIDA,
+                            inicioTurno = java.time.LocalTime.of(8, 0),
+                            finTurno = java.time.LocalTime.of(14, 0),
+                            registro = java.time.LocalTime.of(8, 5),
+                            usuarioId = uf.usuario.id
+                        )
+                    )
+                }
+            }
+        }, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(8.dp))
+        CommonButton(text = "LIMPIAR MARCAS SIMULADAS", onClick = {
+            scope.launch {
+                asistencias.filter { it.fecha == dia && it.registro == java.time.LocalTime.of(8, 5) }.forEach { a ->
+                    asistenciaDao.delete(a.id)
+                }
+            }
+        }, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(8.dp))
+        CommonButton(text = "VER REPORTE DE HORAS", onClick = onOpenReporte, modifier = Modifier.fillMaxWidth())
     }
 }
 

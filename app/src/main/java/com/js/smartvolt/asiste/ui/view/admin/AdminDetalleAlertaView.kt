@@ -31,6 +31,7 @@ import com.js.smartvolt.asiste.ui.theme.deAlerta
 import com.js.smartvolt.asiste.ui.theme.estados
 import com.js.smartvolt.asiste.ui.theme.inicial
 import com.js.smartvolt.asiste.ui.theme.tenue
+import kotlinx.coroutines.launch
 
 // ---------------------------------------------------------------
 // Helpers de estado (mismos textos de la BD que en AdminAlertasView)
@@ -59,6 +60,7 @@ private fun Alerta.etiqueta(): String = when {
 @Composable
 fun AdminDetalleAlertaView(id: String, onBack: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val alertaDao = DatabaseProvider.getAlertaDao(context)
     val alertas by alertaDao.getAll().collectAsState(initial = emptyList())
     val alerta = alertas.firstOrNull { it.id.toString() == id }
@@ -208,7 +210,11 @@ fun AdminDetalleAlertaView(id: String, onBack: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(Medidas.EspacioM)
         ) {
             OutlinedButton(
-                onClick = { },
+                onClick = {
+                    alerta?.let { a ->
+                        scope.launch { alertaDao.upsert(a.copy(estado = "RECHAZADA")) }
+                    }
+                },
                 enabled = !resuelta,
                 modifier = Modifier
                     .weight(1f)
@@ -227,7 +233,11 @@ fun AdminDetalleAlertaView(id: String, onBack: () -> Unit) {
             }
 
             Button(
-                onClick = { },
+                onClick = {
+                    alerta?.let { a ->
+                        scope.launch { alertaDao.upsert(a.copy(estado = "VALIDADA")) }
+                    }
+                },
                 enabled = !resuelta,
                 modifier = Modifier
                     .weight(1f)

@@ -65,8 +65,8 @@ class MainActivity : FragmentActivity() {
                     }
                 }
 
-                // Botón atrás: desde cualquier pantalla vuelve al login
-                BackHandler (enabled = pantalla != "login") {
+                // Botón atrás: desde cualquier pantalla (excepto admin, que gestiona su propio back) vuelve al login
+                BackHandler (enabled = pantalla != "login" && pantalla != "admin") {
                     vm.limpiarEstado()
                     pantalla = "login"
                 }
@@ -103,7 +103,7 @@ class MainActivity : FragmentActivity() {
                     }
 
                     "inicio" -> MainView(codigoOperario = codigoOperario ?: "OP-014", onCerrarSesion = { vm.limpiarEstado(); pantalla = "login" })
-                    "admin" -> AdminMainView()
+                    "admin" -> AdminMainView(onCerrarSesion = { vm.limpiarEstado(); pantalla = "login" })
                 }
             }
         }
