@@ -26,7 +26,7 @@ class AsisteApp : Application() {
         Configuration.getInstance().userAgentValue =
             "$packageName (AsisteSV; contacto@serviciosvolt.cl)"
 
-        // Seed de usuarios demo (igual que antes)
+        // Seed de usuarios demo
         scope.launch {
             val dao = DatabaseProvider.getUsuarioDao(this@AsisteApp)
             try {

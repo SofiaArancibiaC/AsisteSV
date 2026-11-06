@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,7 +23,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -50,7 +47,6 @@ import com.js.smartvolt.asiste.ui.theme.FondoClaroArriba
 import com.js.smartvolt.asiste.ui.theme.FondoClaroAbajo
 import com.js.smartvolt.asiste.ui.theme.CampoFondo
 import com.js.smartvolt.asiste.ui.theme.SuperficieClara
-import com.js.smartvolt.asiste.ui.theme.CampoBorde
 import com.js.smartvolt.asiste.ui.theme.BordeClaro
 import com.js.smartvolt.asiste.ui.theme.TextoClaro
 import com.js.smartvolt.asiste.ui.theme.TextoOscuro
@@ -58,12 +54,10 @@ import com.js.smartvolt.asiste.ui.theme.TextoGris
 import com.js.smartvolt.asiste.ui.theme.TextoOscuroGris
 import com.js.smartvolt.asiste.ui.theme.AmbarClaro
 import com.js.smartvolt.asiste.ui.theme.NaranjaClaro
-import androidx.compose.foundation.isSystemInDarkTheme
 import com.js.smartvolt.asiste.ui.theme.Naranja
-import com.js.smartvolt.asiste.ui.theme.TextoClaro
-import com.js.smartvolt.asiste.ui.theme.TextoGris
 import com.js.smartvolt.asiste.ui.theme.Verde
 import com.js.smartvolt.asiste.ui.theme.colorCampos
+import com.js.smartvolt.asiste.viewmodel.OlvideEstado
 
 
 @Composable
