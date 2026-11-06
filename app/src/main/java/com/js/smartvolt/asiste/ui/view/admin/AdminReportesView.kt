@@ -60,7 +60,7 @@ fun AdminReportesView(onOpenOperario: (String) -> Unit) {
     val horaExtraDao = DatabaseProvider.getHoraExtraDao(context)
     val faenaDao = DatabaseProvider.getFaenaDao(context)
     val faenas by faenaDao.getAll().collectAsState(initial = emptyList())
-    val usuarios by usuarioDao.getByRol(Rol.OPERARIO.name).collectAsState(initial = emptyList())
+    val usuarios by usuarioDao.getByRol(Rol.OPERARIO).collectAsState(initial = emptyList())
 
     var faenaSeleccionada by remember { mutableStateOf<Long?>(null) } // null = todas
     var mesSeleccionado by remember { mutableStateOf(java.time.YearMonth.now()) }

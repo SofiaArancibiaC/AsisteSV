@@ -5,12 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.js.smartvolt.asiste.model.Asistencia
+import com.js.smartvolt.asiste.ui.view.ResultadoMarca
 import com.js.smartvolt.asiste.model.EstadoAsistencia
 import com.js.smartvolt.asiste.model.admin.Faena
 import com.js.smartvolt.asiste.model.data.local.AsistenciaDAO
 import com.js.smartvolt.asiste.model.data.local.ResultadoUbicacion
 import com.js.smartvolt.asiste.model.data.local.UbicacionProvider
-import com.js.smartvolt.asiste.ui.view.ResultadoMarca
+
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

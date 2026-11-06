@@ -37,11 +37,26 @@ class AsisteApp : Application() {
                     faenaDao.upsert(com.js.smartvolt.asiste.model.admin.Faena(nombre = "Planta Industrial", presentes = 50, total = 55))
                 }
                 if (dao.existeCorreo("tecnico@serviciosvolt.cl") == 0) {
-                    dao.insertar(RecuperarUsuario(correo = "tecnico@serviciosvolt.cl", nombre = "Tecnico Demo", passwordHash = sha256("123456"), codigoUsuario = "OP-014"))
-                    dao.insertarUsuario(com.js.smartvolt.asiste.model.admin.Usuario(codigo = "OP-014", rol = com.js.smartvolt.asiste.model.admin.Rol.OPERARIO, faenaId = 1L, activo = true))
+                    dao.insertar(com.js.smartvolt.asiste.model.admin.Usuario(
+                        correo = "tecnico@serviciosvolt.cl",
+                        nombre = "Tecnico Demo",
+                        passwordHash = sha256("123456"),
+                        codigo = "OP-014",
+                        rol = com.js.smartvolt.asiste.model.admin.Rol.OPERARIO,
+                        faenaId = 1L,
+                        activo = true
+                    ))
                 }
                 if (dao.existeCorreo("admin@serviciosvolt.cl") == 0) {
-                    dao.insertar(RecuperarUsuario(correo = "admin@serviciosvolt.cl", nombre = "Admin Demo", passwordHash = sha256("admin123")))
+                    dao.insertar(com.js.smartvolt.asiste.model.admin.Usuario(
+                        correo = "admin@serviciosvolt.cl",
+                        nombre = "Admin Demo",
+                        passwordHash = sha256("admin123"),
+                        codigo = "ADMIN-001",
+                        rol = com.js.smartvolt.asiste.model.admin.Rol.ADMIN,
+                        faenaId = 1L,
+                        activo = true
+                    ))
                 }
             } catch (_: Exception) { }
         }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 
 object DatabaseProvider {
+    @Volatile
     private var db: AppDatabase? = null
 
     private fun database(context: Context): AppDatabase {

@@ -31,9 +31,10 @@ import androidx.compose.runtime.setValue
 import java.time.LocalTime
 import com.js.smartvolt.asiste.model.EstadoAsistencia
 import com.js.smartvolt.asiste.model.RecuperarUsuario
-import com.js.smartvolt.asiste.ui.view.LoginEstado
-import com.js.smartvolt.asiste.ui.view.LoginViewModel
-import com.js.smartvolt.asiste.ui.view.LoginViewModelFactory
+import com.js.smartvolt.asiste.viewmodel.LoginEstado
+import com.js.smartvolt.asiste.viewmodel.LoginViewModel
+import com.js.smartvolt.asiste.viewmodel.LoginViewModelFactory
+import com.js.smartvolt.asiste.data.repository.AuthRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -53,7 +54,7 @@ class MainActivity : FragmentActivity() {
 
                 val context = LocalContext.current
                 val usuarioDao = remember { DatabaseProvider.getUsuarioDao(context) }
-                val vm: LoginViewModel = viewModel(factory = LoginViewModelFactory(usuarioDao))
+                val vm: LoginViewModel = viewModel(factory = LoginViewModelFactory(AuthRepository(usuarioDao)))
                 val estado by vm.estado.collectAsState()
 
 
