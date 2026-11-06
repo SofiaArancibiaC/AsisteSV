@@ -22,8 +22,11 @@ enum class Rol { OPERARIO, CAPATAZ, ADMIN }
 )
 data class Usuario(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val correo: String,
+    val nombre: String,
+    val passwordHash: String,
     val codigo: String,
     val rol: Rol,
     val faenaId: Long,
-    val activo: Boolean
+    val activo: Boolean = true
 )

@@ -190,7 +190,7 @@ fun AdminUsuariosView(onNew: () -> Unit, onOpenPerfil: (String) -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(usuariosVisibles) { u ->
-                    Panel(onClick = { onOpenPerfil(u.codigoUsuario ?: u.correo) }) {
+                    Panel(onClick = { onOpenPerfil(u.codigo ?: u.correo) }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Avatar(u.nombre.ifBlank { u.correo })
                             Spacer(Modifier.width(Medidas.EspacioM))
@@ -446,16 +446,22 @@ fun AdminNuevoUsuarioView(onBack: () -> Unit) {
             if (formularioValido) {
                 val codigo = "OP-${System.currentTimeMillis().toString().takeLast(3)}"
                 vm.agregar(
-                    RecuperarUsuario(
+                    Usuario(
                         correo = correo.trim().lowercase(),
                         nombre = nombre,
                         passwordHash = sha256("123456"),
-                        codigoUsuario = codigo
+                        codigo = codigo,
+                        rol = selectedRol,
+                        faenaId = selectedFaenaId,
+                        activo = true
                     )
                 )
                 runBlocking {
-                    dao.insertarUsuario(
+                    dao.insertar(
                         Usuario(
+                            correo = correo,
+                            nombre = nombre,
+                            passwordHash = sha256("123456"),
                             codigo = codigo,
                             rol = selectedRol,
                             faenaId = selectedFaenaId,
@@ -479,7 +485,7 @@ fun AdminTurnosView(codigo: String, onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val usuarioDao = DatabaseProvider.getUsuarioDao(context)
     val turnoDao = DatabaseProvider.getTurnoDao(context)
-    val operarios by usuarioDao.getByRol(Rol.OPERARIO.name).collectAsState(initial = emptyList())
+    val operarios by usuarioDao.getByRol(Rol.OPERARIO).collectAsState(initial = emptyList())
 
     var selectedUsuarioId by remember { mutableStateOf(0L) }
     var selectedUsuarioCodigo by remember { mutableStateOf(codigo) }
@@ -697,7 +703,7 @@ fun AdminHorasExtraView(codigo: String, onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val usuarioDao = DatabaseProvider.getUsuarioDao(context)
     val horaExtraDao = DatabaseProvider.getHoraExtraDao(context)
-    val operarios by usuarioDao.getByRol(Rol.OPERARIO.name).collectAsState(initial = emptyList())
+    val operarios by usuarioDao.getByRol(Rol.OPERARIO).collectAsState(initial = emptyList())
 
     var selectedUsuarioId by remember { mutableStateOf(0L) }
     var selectedUsuarioCodigo by remember { mutableStateOf(codigo) }

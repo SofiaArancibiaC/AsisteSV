@@ -144,7 +144,7 @@ fun AdminPanelView(onOpenAlertas: () -> Unit, onOpenUsuarios: () -> Unit, onOpen
             Text("No hay faenas registradas")
         } else {
             faenas.forEach { f ->
-                FaenaRow(f.nombre, "0/0", 0f)
+                FaenaRow(f.nombre, "0/0"  , 0f)
             }
         }
 

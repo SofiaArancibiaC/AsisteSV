@@ -1,11 +1,10 @@
-package com.js.smartvolt.asiste.ui.view
+package com.js.smartvolt.asiste.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.js.smartvolt.asiste.model.data.local.UsuarioDAO
-import com.js.smartvolt.asiste.model.data.local.sha256
+import com.js.smartvolt.asiste.data.repository.AuthRepository
+import com.js.smartvolt.asiste.session.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +17,7 @@ sealed interface LoginEstado {
     data class Error(val mensaje: String) : LoginEstado
 }
 
-class LoginViewModel(private val dao: UsuarioDAO) : ViewModel() {
+class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
 
     private val _estado = MutableStateFlow<LoginEstado>(LoginEstado.Idle)
     val estado: StateFlow<LoginEstado> = _estado.asStateFlow()
@@ -36,14 +35,14 @@ class LoginViewModel(private val dao: UsuarioDAO) : ViewModel() {
         viewModelScope.launch {
             _estado.value = LoginEstado.Cargando
             try {
-                val usuario = dao.login(correo.trim().lowercase(), sha256(pass))
-                _estado.value = if (usuario != null) {
-                    LoginEstado.Exito(usuario.codigoUsuario)
+                val usuario = auth.login(correo.trim().lowercase(), pass)
+                if (usuario != null) {
+                    SessionManager.set(usuario)
+                    _estado.value = LoginEstado.Exito(usuario.codigo)
                 } else {
-                    LoginEstado.Error("Correo o contraseña incorrectos")
+                    _estado.value = LoginEstado.Error("Correo o contraseña incorrectos")
                 }
             } catch (e: Exception) {
-                Log.e("LoginVM", "Error en login", e)
                 _estado.value = LoginEstado.Error("Error interno: ${e.message}")
             }
         }
@@ -54,9 +53,9 @@ class LoginViewModel(private val dao: UsuarioDAO) : ViewModel() {
     }
 }
 
-class LoginViewModelFactory(private val dao: UsuarioDAO) : ViewModelProvider.Factory {
+class LoginViewModelFactory(private val auth: AuthRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return LoginViewModel(dao) as T
+        return LoginViewModel(auth) as T
     }
 }

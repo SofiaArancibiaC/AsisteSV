@@ -44,7 +44,6 @@ import java.util.Locale
 
 private val LOCALE_ES: Locale = Locale.forLanguageTag("es-CL")
 
-/** Resultado de las validaciones de presencia que se muestran en la tarjeta. */
 data class ValidacionPresencia(
     val gpsDentroFaena: Boolean,
     val balizaDetectada: Boolean,
@@ -166,7 +165,7 @@ fun InicioView(
                 Spacer(Modifier.weight(1f))
             }
 
-            // Botón principal: fondo amarillo en ambos temas, así que el texto es navy fijo
+            // Botón principal
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -187,7 +186,7 @@ fun InicioView(
 }
 
 // ============================================================
-// Componentes privados (solo los usa esta pantalla)
+// Componentes privados
 // ============================================================
 
 @Composable
@@ -285,7 +284,7 @@ private fun FilaValidacion(etiqueta: String, resultado: String, correcto: Boolea
     }
 }
 
-/** Tarjeta con borde, como los campos del diseño. */
+
 @Composable
 private fun TarjetaConBorde(contenido: @Composable () -> Unit) {
     val cs = MaterialTheme.colorScheme
@@ -302,7 +301,7 @@ private fun TarjetaConBorde(contenido: @Composable () -> Unit) {
     }
 }
 
-/** Píldora de texto (estado, turno, aviso). */
+
 @Composable
 private fun Etiqueta(texto: String, fondo: Color, contenido: Color) {
     Surface(
@@ -319,7 +318,7 @@ private fun Etiqueta(texto: String, fondo: Color, contenido: Color) {
 }
 
 // ============================================================
-// Previews con datos ficticios (oscuro y claro)
+// Previews
 // ============================================================
 
 @Preview(showBackground = true, heightDp = 780)

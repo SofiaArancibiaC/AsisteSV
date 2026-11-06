@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -15,9 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.js.smartvolt.asiste.model.RecuperarUsuario
 import com.js.smartvolt.asiste.model.admin.Usuario
+import com.js.smartvolt.asiste.data.repository.FaenaRepository
+import com.js.smartvolt.asiste.data.repository.UsuarioRepository
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
+import com.js.smartvolt.asiste.viewmodel.PerfilViewModel
+import com.js.smartvolt.asiste.viewmodel.PerfilViewModelFactory
 import com.js.smartvolt.asiste.ui.theme.Medidas
 import com.js.smartvolt.asiste.ui.theme.estados
 import com.js.smartvolt.asiste.ui.theme.inicial
@@ -27,21 +31,14 @@ import kotlinx.coroutines.flow.first
 @Composable
 fun PerfilView(codigoOperario: String = "OP-014") {
     val context = LocalContext.current
-    var usuario by remember { mutableStateOf<Usuario?>(null) }
-    var recuperar by remember { mutableStateOf<RecuperarUsuario?>(null) }
-    var faenaNombre by remember { mutableStateOf<String?>(null) }
+    val vm: PerfilViewModel = viewModel(factory = PerfilViewModelFactory(
+        UsuarioRepository(DatabaseProvider.getUsuarioDao(context)),
+        FaenaRepository(DatabaseProvider.getFaenaDao(context))
+    ))
+    val usuario by vm.usuario.collectAsState()
+    val faenaNombre by vm.faenaNombre.collectAsState()
 
-    LaunchedEffect(codigoOperario) {
-        val dao = DatabaseProvider.getUsuarioDao(context)
-        val u = dao.getByCodigo(codigoOperario)
-        usuario = u
-        val recs = dao.getAll().first()
-        recuperar = recs.firstOrNull { it.codigoUsuario == codigoOperario }
-        if (u != null) {
-            val f = DatabaseProvider.getFaenaDao(context).getById(u.faenaId).first()
-            faenaNombre = f?.nombre
-        }
-    }
+    LaunchedEffect(codigoOperario) { vm.cargar(codigoOperario) }
 
     Column(
         Modifier
@@ -68,7 +65,7 @@ fun PerfilView(codigoOperario: String = "OP-014") {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
-            val nombre = recuperar?.nombre?.takeIf { it.isNotBlank() } ?: u.codigo
+            val nombre = usuario?.nombre?.takeIf { it.isNotBlank() } ?: u.codigo
             val colorActivo = if (u.activo) MaterialTheme.estados.cumplida
             else MaterialTheme.estados.enRevision
 
@@ -123,9 +120,9 @@ fun PerfilView(codigoOperario: String = "OP-014") {
                 )
                 Spacer(Modifier.height(Medidas.EspacioS))
 
-                InfoRow("Nombre", recuperar?.nombre ?: "-")
+                InfoRow("Nombre", usuario?.nombre ?: "-")
                 DivisorSuave()
-                InfoRow("Correo", recuperar?.correo ?: "-")
+                InfoRow("Correo", usuario?.correo ?: "-")
                 DivisorSuave()
                 InfoRow("Código operario", u.codigo)
                 DivisorSuave()

@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.js.smartvolt.asiste.data.repository.AsistenciaRepository
 import com.js.smartvolt.asiste.model.EstadoAsistencia
 import com.js.smartvolt.asiste.model.data.local.DatabaseProvider
 import com.js.smartvolt.asiste.ui.theme.DegradadoFondo
@@ -55,8 +56,8 @@ private val formatoFecha: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM
 @Composable
 fun HistorialView() {
     val context = LocalContext.current
-    val dao = remember { DatabaseProvider.getDao(context) }
-    val attendances by dao.getAll().collectAsState(initial = emptyList())
+    val repo = remember { AsistenciaRepository(DatabaseProvider.getAsistenciaDao(context)) }
+    val attendances by repo.getAll().collectAsState(initial = emptyList())
 
     val ordenadas = remember(attendances) { attendances.sortedByDescending { it.fecha } }
     val cumplidas = attendances.count { it.estado == EstadoAsistencia.CUMPLIDA }
@@ -138,9 +139,7 @@ fun HistorialView() {
     }
 }
 
-// ---------------------------------------------------------------
 // Componentes
-// ---------------------------------------------------------------
 @Composable
 private fun ResumenTile(
     etiqueta: String,
