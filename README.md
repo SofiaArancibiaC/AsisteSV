@@ -229,9 +229,9 @@ mvn test
 
 ---
 
-## Autora
+## Autoras
 
-**Sofía Arancibia Cortez**
+**Sofía Arancibia**, **Camila Cerda**, **Nancy Millar**
 Estudiante de Analista Programador, Duoc UC
 
 [LinkedIn](https://www.linkedin.com/in/sofía-arancibia-cortez-963933319) · [GitHub](https://github.com/SofiaArancibiaC)
