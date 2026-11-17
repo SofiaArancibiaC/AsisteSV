@@ -1,237 +1,237 @@
-# 🎀 Sanrucho
+# AsisteSV — Asistencia en Faena
 
-Tienda en línea de productos **Sanrio**, desarrollada como proyecto académico en **Duoc UC** (Analista Programador).
+Aplicación móvil Android para el **registro de asistencia de trabajadores en faena**, con validación de ubicación por GPS, detección de ubicación simulada (fake GPS) y paneles diferenciados por rol (Operario, Capataz y Administrador).
 
-El repositorio tiene dos partes:
-
-- **Frontend (React + TypeScript):** el sitio web completo de la tienda, con catálogo, carrito, sesión de usuarios, boletas y panel de administración.
-- **Backend (Java + Spring Cloud):** arquitectura de microservicios en desarrollo, pensada para reemplazar los datos de prueba del frontend.
+> Proyecto académico — asignatura **DSY1105** (Duoc UC).
+> Paquete: `com.js.smartvolt.asiste`
 
 ---
 
 ## Tabla de contenidos
 
-1. [Estado del proyecto](#estado-del-proyecto)
-2. [Tecnologías](#tecnologías)
-3. [Estructura del repositorio](#estructura-del-repositorio)
-4. [Frontend](#frontend)
-5. [Backend](#backend)
-6. [Pruebas](#pruebas)
-7. [Próximos pasos](#próximos-pasos)
-8. [Autora](#autora)
+- [Descripción](#descripción)
+- [Características](#características)
+- [Roles y funcionalidades](#roles-y-funcionalidades)
+- [Cómo funciona la marca de asistencia](#cómo-funciona-la-marca-de-asistencia)
+- [Tecnologías](#tecnologías)
+- [Arquitectura](#arquitectura)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Modelo de datos](#modelo-de-datos)
+- [Requisitos](#requisitos)
+- [Instalación y ejecución](#instalación-y-ejecución)
+- [Usuarios de demostración](#usuarios-de-demostración)
+- [Permisos de Android](#permisos-de-android)
+- [Notas y limitaciones](#notas-y-limitaciones)
+- [Autoría](#autoría)
 
 ---
 
-## Estado del proyecto
+## Descripción
 
-| Parte | Estado |
+**AsisteSV** permite que los operarios registren su entrada y salida directamente desde el teléfono, y que solo se acepte la marca si se encuentran **físicamente dentro del radio de la faena**. Cuando se detecta un intento sospechoso (ubicación simulada o marca fuera de la faena), la marca queda **rechazada** y se genera una **alerta** para que capataz o administrador la revisen.
+
+La app funciona **de forma local** (base de datos Room en el dispositivo), por lo que no requiere un backend para ejecutarse y demostrarse.
+
+## Características
+
+- Inicio de sesión con correo y contraseña (hash **SHA-256**) y flujo de "Olvidé mi contraseña".
+- Marca de **entrada** y **salida** validada por GPS (radio configurable por faena).
+- **Detección de ubicación simulada** (mock location).
+- Estados de asistencia: `CUMPLIDA`, `ATRASADA`, `FALTA`, `EN_REVISION`, `RECHAZADA`.
+- Tolerancia de atraso de **10 minutos** sobre el inicio del turno.
+- **Calendario mensual** de asistencias y **historial** con resumen (cumplidas, atrasos, faltas).
+- **Mapa** de la faena con OpenStreetMap (osmdroid).
+- **Alertas** automáticas ante marcas rechazadas (ubicación simulada / fuera de faena).
+- Gestión de **usuarios, turnos y horas extra** desde el panel de administración.
+- **Reportes** de asistencia por faena y por día.
+- Navegación con menú lateral, barras inferiores por rol y tema Material 3.
+- Carga automática de **datos demo** (faenas y usuarios) en el primer arranque.
+
+## Roles y funcionalidades
+
+| Rol | Funcionalidades principales |
 | --- | --- |
-| Frontend React | Funcional. Guarda los datos en `localStorage`, por lo que **no necesita el backend** para funcionar. |
-| Backend de microservicios | En desarrollo. Servidor Eureka y servicios de usuarios, catálogo, pedidos y pagos configurados con PostgreSQL. |
-| Integración frontend ↔ backend | Pendiente. |
+| **Operario** | Marcar entrada/salida, ver estado de presencia (GPS), calendario, historial, perfil y configuración. |
+| **Capataz** | Panel de su faena, reportes, revisión de alertas, listado de operarios, turnos y horas extra por operario. |
+| **Administrador** | Panel general con filtros por día y faena, reportes, alertas con detalle, alta/edición de usuarios, turnos y aprobación de horas extra. |
 
----
+## Cómo funciona la marca de asistencia
+
+1. El operario presiona **MARCAR ENTRADA**.
+2. `UbicacionProvider` obtiene la ubicación con *Fused Location Provider* (alta precisión, timeout de 12 s; si no llega una lectura nueva usa la última conocida).
+3. Se calcula la distancia entre el teléfono y el centro de la faena y se compara con el radio permitido (por defecto **100 m**).
+4. Se resuelve el resultado:
+
+| Situación | Resultado | Efecto |
+| --- | --- | --- |
+| Sin permiso / GPS apagado / sin lectura | Marca no realizada | Se informa al usuario cómo corregirlo |
+| Ubicación simulada detectada | `RECHAZADA` | Se crea una **alerta** (`REVISION`) |
+| Fuera del radio de la faena | `RECHAZADA` | Se crea una **alerta** (`REVISION`) |
+| Dentro de la faena y a tiempo | `CUMPLIDA` | Entrada registrada |
+| Dentro de la faena pasada la tolerancia | `ATRASADA` | Entrada registrada con atraso |
+
+5. La **salida** exige una entrada previa válida y repite las mismas validaciones de ubicación.
+6. Si ya existe una entrada válida para el día, no se duplica la marca.
+
+> La interfaz contempla también una validación por baliza BLE en la pantalla de inicio, pero la detección real de balizas no está implementada en esta versión.
 
 ## Tecnologías
 
-**Frontend**
-
-- React 18, TypeScript y Vite
-- React Router 6
-- Bootstrap 5, React-Bootstrap y Bootstrap Icons
-- SweetAlert2 (alertas)
-- jsPDF y html2canvas (generación de documentos PDF)
-- Karma y Jasmine (pruebas unitarias)
-
-**Backend**
-
-- Java 21 y Maven (proyecto multi-módulo)
-- Spring Boot 4.1.0 y Spring Cloud 2025.0.0
-- Spring Data JPA y PostgreSQL
-- Netflix Eureka (descubrimiento de servicios)
-- OpenFeign (comunicación entre microservicios)
-- MapStruct y Lombok
-- Docker (base de datos local)
-
----
-
-## Estructura del repositorio
-
-```
-Sanrucho/
-├─ Backend/
-│  ├─ eureka/            # Servidor de descubrimiento (puerto 8761)
-│  ├─ ms-usuarios/       # Microservicio de usuarios   (puerto 9001)
-│  ├─ ms-catalogo/       # Microservicio de catálogo   (puerto 9002)
-│  ├─ ms-pedidos/        # Microservicio de pedidos    (puerto 9003)
-│  ├─ ms-pagos/          # Microservicio de pagos      (puerto 9004)
-│  ├─ init-multi-db/     # Scripts SQL y .bat para la base de datos con Docker
-│  ├─ pom.xml            # POM padre (cl.sanrucho:tienda)
-│  └─ *.bat              # Scripts para compilar y levantar servicios (Windows)
-└─ Frontend-React/
-   ├─ public/            # Imágenes y estilos estáticos
-   └─ src/
-      ├─ components/     # Layout y componentes reutilizables
-      ├─ context/        # AuthContext (sesión) y CartContext (carrito)
-      ├─ hooks/          # useProductos, useUsuarios, usePedidos, etc.
-      ├─ pages/          # Páginas públicas y panel de administración
-      ├─ storage/        # Acceso reactivo a localStorage
-      ├─ data/           # Datos de prueba (seed)
-      ├─ types/          # Tipos del dominio
-      └─ utils/          # Validaciones, formatos, alertas y lógica de pedidos
-```
-
----
-
-## Frontend
-
-### Funcionalidades
-
-- Catálogo de productos con filtros y detalle de producto
-- Reseñas de productos
-- Carrito de compras con cálculo de totales y envío
-- Registro, inicio de sesión y perfil de usuario
-- Blog, página "Nosotros" y formulario de contacto
-- Panel de administración protegido por roles: gestión de productos, usuarios, boletas e historial de compras
-- Validaciones de formularios y alertas con SweetAlert2
-
-### Requisitos
-
-- Node.js 18 o superior (recomendado 20+)
-
-### Cómo ejecutarlo
-
-```bash
-cd Frontend-React
-npm install
-npm run dev
-```
-
-La aplicación se abre en <http://localhost:5173>.
-
-### Comandos disponibles
-
-| Comando | Descripción |
+| Área | Tecnología |
 | --- | --- |
-| `npm run dev` | Servidor de desarrollo con recarga automática |
-| `npm run build` | Verifica tipos y genera la carpeta `dist` |
-| `npm run preview` | Sirve la versión compilada |
-| `npm test` | Ejecuta las pruebas unitarias una vez |
-| `npm run test:watch` | Ejecuta las pruebas y vuelve a correrlas al guardar |
+| Lenguaje | Kotlin |
+| UI | Jetpack Compose + Material 3 |
+| Persistencia | Room `2.7.0` (SQLite local) con KSP |
+| Asincronía | Kotlin Coroutines + Flow / StateFlow |
+| Ubicación | Google Play Services — Fused Location Provider |
+| Mapas | osmdroid `6.1.20` (OpenStreetMap) |
+| Calendario | [kizitonwose/Calendar](https://github.com/kizitonwose/Calendar) (Compose) |
+| Biometría | `androidx.biometric` `1.1.0` (dependencia y permiso declarados) |
+| Build | Gradle `9.6.0`, JDK 25 |
+| SDK Android | `minSdk 26` · `targetSdk 37` |
 
-### Usuarios de prueba
+## Arquitectura
 
-Los datos se cargan automáticamente en `localStorage` la primera vez que se abre la aplicación.
+El proyecto sigue un patrón **MVVM** con una capa de repositorios:
 
-| Rol | Correo | Contraseña | Acceso a `/admin` |
-| --- | --- | --- | --- |
-| Dueño | `dueno@gmail.com` | `dueno123` | Sí |
-| Admin | `admin@gmail.com` | `admin123` | Sí |
-| Cliente | `camila@gmail.com` | `camila123` | No |
+```
+UI (Compose Views)
+      │  observa StateFlow
+      ▼
+ViewModel  (AsistenciaViewModel, LoginViewModel, UsuarioViewModel, ...)
+      │
+      ▼
+Repository (AuthRepository, AsistenciaRepository, ...)
+      │
+      ▼
+DAO (Room)  ──►  AppDatabase  (asiste.db)
+```
 
-Para reiniciar los datos de prueba, borra las claves `sanrucho_*` en DevTools → Application → Local Storage y recarga la página.
+- `DatabaseProvider` entrega una instancia única (singleton) de la base de datos.
+- `SessionManager` mantiene al usuario autenticado en memoria.
+- `MainActivity` decide el flujo de navegación según el rol del usuario tras el login.
 
-### Rutas principales
+## Estructura del proyecto
 
-- **Públicas:** `/`, `/productos`, `/producto-detalle`, `/carrito`, `/login`, `/registro`, `/nosotros`, `/blog`, `/contacto`
-- **Administración (rol Dueño o Admin):** `/admin`, `/admin/productos`, `/admin/boletas`, `/admin/usuarios`
+```
+app/src/main/java/com/js/smartvolt/asiste/
+├── AsisteApp.kt                 # Application: init de osmdroid + datos demo
+├── MainActivity.kt              # Navegación login → olvidé clave → vista por rol
+├── data/
+│   ├── location/                # UbicacionProvider (GPS + detección de mock)
+│   └── repository/              # Auth, Asistencia, Alerta, Faena, HoraExtra, Turno, Usuario
+├── model/
+│   ├── Asistencia.kt
+│   ├── RecuperarUsuario.kt
+│   ├── admin/                   # Alerta, Faena, HoraExtra, Turno, Usuario (+ relaciones)
+│   └── data/local/              # AppDatabase, DAOs, Converters, Hash (SHA-256)
+├── session/                     # SessionManager
+├── ui/
+│   ├── components/              # Barras inferiores, menú lateral, botones, mapa OSM, etc.
+│   ├── theme/                   # Color, Theme, Type
+│   └── view/
+│       ├── (Login, Inicio, Calendario, Historial, Perfil, Configuración, ...)
+│       ├── admin/               # Panel, usuarios, turnos, horas extra, alertas, reportes
+│       └── capataz/             # Panel y vistas del capataz
+└── viewmodel/                   # Asistencia, Login, OlvideClave, Faena, Perfil, Usuario
+```
 
----
+## Modelo de datos
 
-## Backend
+Base de datos Room `asiste.db` (versión 6), con estas entidades:
 
-### Arquitectura
-
-Cada microservicio es un módulo Maven independiente, con su propia base de datos PostgreSQL, y se registra en el servidor Eureka.
-
-| Servicio | Puerto | Base de datos |
+| Entidad | Descripción | Relaciones |
 | --- | --- | --- |
-| `eureka` | 8761 | — |
-| `ms-usuarios` | 9001 | `usuarios` |
-| `ms-catalogo` | 9002 | `catalogo` |
-| `ms-pedidos` | 9003 | `pedidos` |
-| `ms-pagos` | 9004 | `pagos` |
+| `Faena` | Lugar de trabajo: nombre, presentes/total, latitud, longitud y radio en metros. | — |
+| `Usuario` | Correo, nombre, hash de contraseña, código, rol (`OPERARIO`, `CAPATAZ`, `ADMIN`) y estado activo. | `faenaId` → `Faena` |
+| `Asistencia` | Fecha, estado, horario de turno, hora de entrada/salida y coordenadas. | — |
+| `Turno` | Día, horario y si está activo. | `usuarioId` → `Usuario` |
+| `HoraExtra` | Fecha, horas, motivo, nota y estado (`PENDIENTE`, `APROBADO`, `RECHAZADO`). | `usuarioId` → `Usuario` |
+| `Alerta` | Código de operario, tipo de marca (`ENTRADA`/`SALIDA`), hora, motivo y estado. | `faenaId` → `Faena` |
 
-### Requisitos
+## Requisitos
 
-- JDK 21
-- Maven 3.9 o superior
-- Docker
+- **Android Studio** reciente (con soporte para AGP/Gradle 9.x).
+- **JDK 25** (se puede usar el JBR incluido en Android Studio).
+- **Android SDK** con API 37 instalada.
+- Dispositivo o emulador con **Android 8.0 (API 26)** o superior.
+- Para probar la marca de asistencia: un dispositivo con **GPS** (en emulador se puede fijar la ubicación manualmente).
 
-### Cómo ejecutarlo
+## Instalación y ejecución
 
-**1. Levantar PostgreSQL con Docker**
+1. Clona el repositorio:
 
-```bash
-docker run --name postgres-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=123 -p 5433:5432 -d postgres
-```
+   ```bash
+   git clone <URL-DEL-REPOSITORIO>
+   cd AsisteSV
+   ```
 
-**2. Crear las bases de datos**
+2. Abre el proyecto en **Android Studio** y espera a que termine la sincronización de Gradle.
 
-```bash
-docker exec -it postgres-db psql -U postgres -c "CREATE DATABASE usuarios;"
-docker exec -it postgres-db psql -U postgres -c "CREATE DATABASE catalogo;"
-docker exec -it postgres-db psql -U postgres -c "CREATE DATABASE pedidos;"
-docker exec -it postgres-db psql -U postgres -c "CREATE DATABASE pagos;"
-```
+3. Verifica que el archivo `local.properties` apunte a tu Android SDK (Android Studio lo genera automáticamente):
 
-Hibernate crea las tablas automáticamente (`ddl-auto: update`).
+   ```properties
+   sdk.dir=RUTA/A/TU/Android/Sdk
+   ```
 
-**3. Iniciar el servidor Eureka**
+   > `local.properties` es específico de cada equipo y **no debe subirse** al repositorio.
 
-```bash
-cd Backend
-mvn -f eureka spring-boot:run
-```
+4. Selecciona un dispositivo o emulador y ejecuta la configuración **app** (▶).
 
-**4. Iniciar los microservicios** (cada uno en su propia terminal)
+   O por línea de comandos:
 
-```bash
-mvn -f ms-usuarios spring-boot:run
-mvn -f ms-catalogo spring-boot:run
-mvn -f ms-pedidos spring-boot:run
-mvn -f ms-pagos spring-boot:run
-```
+   ```bash
+   # Windows
+   gradlew.bat assembleDebug
 
-En Windows también puedes usar `run-all.bat` para abrir una ventana por servicio.
+   # Linux / macOS
+   ./gradlew assembleDebug
+   ```
 
-Panel de Eureka: <http://localhost:8761>
+5. Al abrir la app por primera vez, concede el permiso de **ubicación precisa** y activa el GPS.
 
-> Las credenciales de la base de datos (`postgres` / `123`) son solo para desarrollo local.
+### Probar la marca de asistencia
+
+La faena demo está centrada en **Santiago** (`-33.4489, -70.6693`) con un radio de **100 m**. Para probar:
+
+- **Marca válida:** en un emulador, fija la ubicación en esas coordenadas (Extended controls → Location).
+- **Marca rechazada por distancia:** fija una ubicación lejana a la faena.
+- **Marca rechazada por fake GPS:** usa una app de ubicación simulada; la marca se rechaza y se genera una alerta visible para capataz/administrador.
+
+## Usuarios de demostración
+
+Se crean automáticamente en el primer arranque (datos solo para pruebas académicas):
+
+| Rol | Correo | Contraseña | Código |
+| --- | --- | --- | --- |
+| Operario | `tecnico@serviciosvolt.cl` | `123456` | `OP-014` |
+| Capataz | `capataz@serviciosvolt.cl` | `capataz123` | `CAP-001` |
+| Administrador | `admin@serviciosvolt.cl` | `admin123` | `ADMIN-001` |
+
+También se precargan tres faenas de ejemplo: **Ruta 5 Norte**, **Puente Maipo** y **Planta Industrial**.
+
+## Permisos de Android
+
+| Permiso | Uso |
+| --- | --- |
+| `ACCESS_FINE_LOCATION` | Validar que el operario esté dentro de la faena (se exige ubicación precisa). |
+| `ACCESS_COARSE_LOCATION` | Complemento de ubicación. |
+| `INTERNET` / `ACCESS_NETWORK_STATE` | Descarga de teselas del mapa (OpenStreetMap) y estado de red. |
+| `USE_BIOMETRIC` | Declarado para autenticación biométrica. |
+
+## Notas y limitaciones
+
+- Es una **versión académica**: todos los datos viven en el dispositivo (Room); no hay backend.
+- Las contraseñas se almacenan como hash **SHA-256 sin sal**. Para un entorno real se recomienda usar un algoritmo con sal y costo (bcrypt, Argon2) y autenticación en servidor.
+- La recuperación de contraseña es una **simulación**: valida el formato del correo y responde con un mensaje genérico (evita la enumeración de usuarios), pero no envía correos.
+- La base de datos usa `fallbackToDestructiveMigration`: al cambiar el esquema, los datos locales se reinician.
+- La sesión (`SessionManager`) se guarda solo en memoria; al cerrar la app hay que iniciar sesión nuevamente.
+- La validación por baliza BLE está contemplada en la interfaz pero aún no implementada.
+
+## Autoría
+
+Desarrollado por **Sofía Arancibia y Jhaimar Altuve** como proyecto de la asignatura **DSY1105**, Duoc UC.
 
 ---
 
-## Pruebas
-
-**Frontend:** pruebas unitarias con Karma y Jasmine sobre validaciones, formatos y lógica de pedidos.
-
-```bash
-cd Frontend-React
-npm test
-```
-
-**Backend:**
-
-```bash
-cd Backend
-mvn test
-```
-
----
-
-## Próximos pasos
-
-- Completar la lógica de negocio de los microservicios (endpoints REST, DTOs y validaciones)
-- Agregar un API Gateway
-- Conectar el frontend con los microservicios en vez de `localStorage`
-- Incorporar autenticación con tokens
-- Ampliar la cobertura de pruebas
-
----
-
-## Autoras
-
-**Sofía Arancibia**, **Camila Cerda**, **Nancy Millar**
-Estudiante de Analista Programador, Duoc UC
-
-[LinkedIn](https://www.linkedin.com/in/sofía-arancibia-cortez-963933319) · [GitHub](https://github.com/SofiaArancibiaC)
+*Servicios Volt — AsisteSV*
